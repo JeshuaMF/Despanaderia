@@ -3,7 +3,6 @@ const mysql = require("mysql2");
 const bodyParser = require("body-parser");
 const app = express();
 
-// Conexión única a la base de datos unificada
 require('dotenv').config();
 
 const con = mysql.createConnection({
