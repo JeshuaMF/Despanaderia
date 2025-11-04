@@ -295,6 +295,7 @@ app.put('/carrito/actualizar/:id', (req, res) => {
 
 
 // ------------------ INICIO ------------------
-app.listen(10000, () => {
-    console.log("Servidor escuchando en el puerto 10000");
+app.listen(process.env.PORT || 10000, () => {
+    console.log(`Servidor escuchando en el puerto ${process.env.PORT || 10000}`);
 });
+
