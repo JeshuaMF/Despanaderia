@@ -240,6 +240,59 @@ app.get('/estadoSesion', (req, res) => {
     });
 });
 
+const carrito = [];
+
+app.get('/carrito', (req, res) => {
+  res.json(carrito);
+});
+
+app.post('/carrito/agregar', (req, res) => {
+  const { nombre, precio, cantidad } = req.body;
+  if (!nombre || precio < 0 || cantidad <= 0) {
+    return res.status(400).json({ error: 'Datos inválidos' });
+  }
+  const id = Date.now();
+  carrito.push({ id, nombre, precio, cantidad });
+  res.json({ ok: true });
+});
+
+app.delete('/carrito/eliminar/:id', (req, res) => {
+  const id = Number(req.params.id);
+  const index = carrito.findIndex(p => p.id === id);
+  if (index !== -1) carrito.splice(index, 1);
+  res.json({ ok: true });
+});
+
+app.post('/carrito/compra', (req, res) => {
+  con.query('SELECT id FROM usuarios WHERE sesion_iniciada = 1 LIMIT 1', (err, resultado) => {
+    if (err || resultado.length === 0) return res.status(403).json({ error: 'No hay sesión activa' });
+    const usuarioId = resultado[0].id;
+
+    carrito.forEach(item => {
+      con.query(
+        'INSERT INTO compras (usuario_id, nombre_pan, precio, cantidad) VALUES (?, ?, ?, ?)',
+        [usuarioId, item.nombre, item.precio, item.cantidad]
+      );
+    });
+
+    carrito.length = 0;
+    res.json({ ok: true });
+  });
+});
+
+app.put('/carrito/actualizar/:id', (req, res) => {
+  const id = Number(req.params.id);
+  const { cantidad } = req.body;
+
+  if (cantidad <= 0) return res.status(400).json({ error: 'Cantidad inválida' });
+
+  const item = carrito.find(p => p.id === id);
+  if (!item) return res.status(404).json({ error: 'Producto no encontrado' });
+
+  item.cantidad = cantidad;
+  res.json({ ok: true });
+});
+
 
 // ------------------ INICIO ------------------
 app.listen(10000, () => {

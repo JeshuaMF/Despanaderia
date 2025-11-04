@@ -15,7 +15,6 @@
     <div class="logo text-2xl font-bold">Despanaderia</div>
     <div class="nav-icons flex items-center space-x-4">
         <span id="session-icon" class="icon text-xl cursor-pointer hover:text-gray-400 transition"></span>
-        <span class="icon text-xl cursor-pointer hover:text-gray-400 transition">🛒</span>
     </div>
 </header>
 <!-- Mensaje de sesión -->
@@ -27,9 +26,28 @@
         <section class="catalog-section py-16">
             <h2 class="text-4xl font-bold text-center mb-10">Nuestro Catálogo</h2>
             <div class="product-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="product-grid">
-    <!-- Aquí se insertarán las tarjetas dinámicamente -->
+
             </div>
         </section>
+
+        <section class="cart-section py-8 border-t border-gray-700 mt-12">
+        <h2 class="text-2xl font-bold">Carrito (<span id="contador">0</span>)</h2>
+        <table class="w-full text-sm mt-4" id="tablaCarrito">
+            <thead>
+            <tr class="text-left border-b border-gray-700">
+                <th>Nombre</th>
+                <th>Precio</th>
+                <th>Cantidad</th>
+                <th>Subtotal</th>
+                <th>Acción</th>
+            </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <p class="mt-2">Total: $<span id="total">0.00</span></p>
+        <button id="pagarBtn" class="bg-red-500 text-white px-4 py-2 rounded mt-4">Pagar</button>
+        </section>
+
 
         <!-- SECCIÓN DE ADMINISTRACIÓN (CRUD) - Formularios para interactuar con app.js -->
         <section class="crud-section border-t border-gray-700 mt-12 pt-10">
@@ -45,7 +63,7 @@
                         <input type="number" name="precio" placeholder="Precio" step="0.01" min="0" required>
                         <textarea name="ingredientes" placeholder="Ingredientes" required></textarea>
                         <input type="text" name="imagen_url" placeholder="URL de la imagen del pan" required>
-                        <button type="submit">Guardar Pan</button>
+                        <button type="submit" id="guardarPanBtn">Guardar Pan</button>
                     </form>
 
                 </div>
@@ -56,7 +74,7 @@
                         Mira todos los panes aqui.
                     </p>
                     <!-- Enlace para ver la Lista Completa, Editar y Borrar (R, U, D) del servidor (app.js) -->
-                    <a href="/obtenerPanes" class="list-link">Ver/Editar/Borrar Panes (Lista Completa)</a>
+                    <a href="/obtenerPanes" class="list-link" id="crudListaBtn">Ver/Editar/Borrar Panes (Lista Completa)</a>
                 </div>
             </div>
         </section>
@@ -91,32 +109,6 @@
                 }
             });
     </script>
-
-        <script>
-            fetch('/api/panes')
-                .then(res => res.json())
-                .then(panes => {
-                    const grid = document.getElementById('product-grid');
-                    grid.innerHTML = ''; // Limpia el contenedor
-
-                    panes.forEach(pan => {
-                        const card = document.createElement('div');
-                        card.className = 'product-card bg-gray-800 p-4 rounded-lg shadow';
-
-                        card.innerHTML = `
-                        <img src="${pan.imagen_url}" alt="${pan.nombre}" class="w-full h-32 object-cover rounded mb-4">
-                        <h3 class="text-xl font-semibold">${pan.nombre}</h3>
-                        <p class="text-sm text-gray-400 mt-1">${pan.ingredientes}</p>
-                        <div class="flex justify-between items-center mt-4">
-                            <span class="price">Rs. ${pan.precio}/-</span>
-                            <button class="buy-button">🛒</button>
-                        </div>
-                        `;
-
-
-                        grid.appendChild(card);
-                    });
-                });
-        </script>
+        <script src="cliente.js"></script>
     </body>
 </html>
