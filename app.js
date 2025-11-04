@@ -4,19 +4,22 @@ const bodyParser = require("body-parser");
 const app = express();
 
 // Conexión única a la base de datos unificada
+require('dotenv').config();
+
 const con = mysql.createConnection({
-    host: 'btczix10dgu2uwwk59dt-mysql.services.clever-cloud.com',
-    user: 'u7eagflattluomiy',
-    password: 'AHrWn9v8gxA3STuCWy4p',
-    database: 'btczix10dgu2uwwk59dt'
+  host: process.env.DB_HOST,
+  port: process.env.DB_PORT,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME
 });
 
 con.connect((err) => {
-    if (err) {
-        console.error('Error al conectar a la base de datos:', err.stack);
-        return;
-    }
-    console.log('Conectado a tienda_o2_db con el ID ' + con.threadId);
+  if (err) {
+    console.error('Error al conectar a la base de datos:', err);
+    return;
+  }
+  console.log('Conexión exitosa a la base de datos');
 });
 
 // Middlewares
