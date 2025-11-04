@@ -5,10 +5,10 @@ const app = express();
 
 // Conexión única a la base de datos unificada
 const con = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: 'Batman',
-    database: 'panaderia_db'
+    host: 'btczix10dgu2uwwk59dt-mysql.services.clever-cloud.com',
+    user: 'u7eagflattluomiy',
+    password: 'AHrWn9v8gxA3STuCWy4p',
+    database: 'btczix10dgu2uwwk59dt'
 });
 
 con.connect((err) => {
