@@ -28,7 +28,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
 
-// ------------------ CRUD DE PANES ------------------
+// CRUD DE LOS PANES
 
 // Crear pan
 app.post('/agregarPan', (req, res) => {
@@ -58,7 +58,7 @@ app.get('/obtenerPanes', (req, res) => {
             return res.status(500).send("Error al cargar la lista de panes.");
         }
 
-        let panesHTML = ``; // ✅ ESTA LÍNEA ES CLAVE
+        let panesHTML = ``; 
 
         resultado.forEach(pan => {
             panesHTML += `<tr>
@@ -201,7 +201,7 @@ app.get('/api/panes', (req, res) => {
 });
 
 
-// ------------------ USUARIOS ------------------
+//Usuarios
 
 // Registro
 app.post('/registrarUsuario', (req, res) => {
@@ -296,8 +296,14 @@ app.put('/carrito/actualizar/:id', (req, res) => {
   res.json({ ok: true });
 });
 
+app.get('/test-db', (req, res) => {
+  con.query('SELECT 1 + 1 AS resultado', (err, resultado) => {
+    if (err) return res.status(500).send("Error de conexión con la base");
+    res.send(`Conexión OK. Resultado: ${resultado[0].resultado}`);
+  });
+});
 
-// ------------------ INICIO ------------------
+
 app.listen(process.env.PORT || 10000, () => {
     console.log(`Servidor escuchando en el puerto ${process.env.PORT || 10000}`);
 });
