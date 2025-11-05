@@ -47,9 +47,6 @@ app.post('/agregarPan', (req, res) => {
     );
 });
 
-
-
-// Leer panes
 app.get('/obtenerPanes', (req, res) => {
     con.query('SELECT * FROM panes', (err, resultado) => {
         if (err) {
