@@ -148,7 +148,7 @@ if (pagarBtn) {
 }
 
 function deshabilitarAcciones() {
-  // Deshabilitar botones 🛒
+  // Deshabilitar botones
   document.querySelectorAll('.buy-button').forEach(btn => {
     btn.disabled = true;
     btn.classList.add('opacity-50', 'cursor-not-allowed');
@@ -177,7 +177,6 @@ function deshabilitarAcciones() {
     btn.title = 'Inicia sesión para eliminar del carrito';
   });
 
-  // Mostrar mensaje
   const mensaje = document.createElement('p');
   mensaje.textContent = 'Inicia sesión para realizar compras.';
   mensaje.className = 'text-yellow-400 mt-4 text-center';
