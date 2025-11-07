@@ -21,15 +21,10 @@ con.connect((err) => {
   console.log('Conexión exitosa a la base de datos');
 });
 
-// Middlewares
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
-
-// CRUD DE LOS PANES
-
-// Crear pan
 app.post('/agregarPan', (req, res) => {
     const { nombre, precio, ingredientes, imagen_url } = req.body;
 
@@ -110,8 +105,6 @@ app.get('/obtenerPanes', (req, res) => {
     });
 });
 
-
-// Borrar pan
 app.post('/borrarPan', (req, res) => {
     const { id } = req.body;
     con.query('DELETE FROM panes WHERE id = ?', [id], (err, resultado) => {
@@ -121,7 +114,6 @@ app.post('/borrarPan', (req, res) => {
     });
 });
 
-// Formulario de edición
 app.get('/editarPan/:id', (req, res) => {
     const { id } = req.params;
     con.query('SELECT * FROM panes WHERE id = ?', [id], (err, resultado) => {
@@ -168,8 +160,6 @@ app.get('/editarPan/:id', (req, res) => {
     });
 });
 
-
-// Actualizar pan
 app.post('/actualizarPan', (req, res) => {
     const { id, nombre, precio, ingredientes, imagen_url } = req.body;
 
@@ -196,10 +186,6 @@ app.get('/api/panes', (req, res) => {
     });
 });
 
-
-//Usuarios
-
-// Registro
 app.post('/registrarUsuario', (req, res) => {
     const { nombre, contraseña } = req.body;
     if (!nombre || !contraseña) return res.send("Campos inválidos");
@@ -209,7 +195,6 @@ app.post('/registrarUsuario', (req, res) => {
     });
 });
 
-// Inicio de sesión
 app.post('/iniciarSesion', (req, res) => {
     const { nombre, contraseña } = req.body;
     con.query('SELECT * FROM usuarios WHERE nombre = ? AND contraseña = ?', [nombre, contraseña], (err, resultado) => {
@@ -221,7 +206,6 @@ app.post('/iniciarSesion', (req, res) => {
     });
 });
 
-// Cierre de sesión
 app.post('/cerrarSesion', (req, res) => {
     const { nombre } = req.body;
     con.query('UPDATE usuarios SET sesion_iniciada = 0 WHERE nombre = ?', [nombre], (err) => {
@@ -230,7 +214,6 @@ app.post('/cerrarSesion', (req, res) => {
     });
 });
 
-// Verificar sesión activa
 app.get('/estadoSesion', (req, res) => {
     con.query('SELECT nombre FROM usuarios WHERE sesion_iniciada = 1 LIMIT 1', (err, resultado) => {
         if (err) return res.json({ error: true });
