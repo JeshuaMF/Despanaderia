@@ -4,10 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mi Tienda Online de Panes (O2)</title>
-    <!-- Carga de Tailwind CSS (se usa solo para utilidades de layout) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
-    <!-- Enlace al archivo de estilos CSS (DEBE ser "estilo.css") -->
     <link rel="stylesheet" href="style.css"> 
 </head>
 <body class="bg-gray-900 text-white">
@@ -17,12 +15,9 @@
         <span id="session-icon" class="icon text-xl cursor-pointer hover:text-gray-400 transition"></span>
     </div>
 </header>
-<!-- Mensaje de sesión -->
 <div id="session-message" class="text-sm text-green-400 mt-2 text-center"></div>
 
     <main class="max-w-7xl mx-auto p-4">
-
-        <!-- SECCIÓN DE CATÁLOGO (MUESTRA LOS PANES) -->
         <section class="catalog-section py-16">
             <h2 class="text-4xl font-bold text-center mb-10">Nuestro Catálogo</h2>
             <div class="product-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="product-grid">
@@ -48,16 +43,13 @@
         <button id="pagarBtn" class="bg-red-500 text-white px-4 py-2 rounded mt-4">Pagar</button>
         </section>
 
-
-        <!-- SECCIÓN DE ADMINISTRACIÓN (CRUD) - Formularios para interactuar con app.js -->
         <section class="crud-section border-t border-gray-700 mt-12 pt-10">
             <h2 class="text-4xl font-bold text-center mb-10 text-primary">Administración de Panes (CRUD)</h2>
             <div class="crud-container mx-auto">
-                
-                <!-- Tarjeta 1: Formulario de CREACIÓN (C) -->
+
                 <div class="crud-form">
                     <h3>Agregar Pan Nuevo</h3>
-                    <!-- Apunta a la ruta POST /agregarPan del servidor (app.js) -->
+
                     <form method="POST" action="/agregarPan">
                         <input type="text" name="nombre" placeholder="Nombre del pan" required>
                         <input type="number" name="precio" placeholder="Precio" step="0.01" min="0" required>
@@ -73,7 +65,6 @@
                     <p class="text-gray-400 mb-6">
                         Mira todos los panes aqui.
                     </p>
-                    <!-- Enlace para ver la Lista Completa, Editar y Borrar (R, U, D) del servidor (app.js) -->
                     <a href="/obtenerPanes" class="list-link" id="crudListaBtn">Ver/Editar/Borrar Panes (Lista Completa)</a>
                 </div>
             </div>
