@@ -140,3 +140,9 @@ body {
     .hero-content { max-width: 50%; }
     .crud-form, .crud-actions-card { width: 45%; }
 }
+#map-template {
+  height: 400px;
+  width: 100%;
+  margin-top: 20px;
+  border-radius: 8px;
+}
