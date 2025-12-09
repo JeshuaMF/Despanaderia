@@ -11,14 +11,38 @@ async function fetchJson(url, opts) {
 }
 
 // Verificar sesión y rol
+// Verificar sesión y rol
 fetch('/estadoSesion')
   .then(res => res.json())
   .then(data => {
     if (!data.sesion || data.rol !== 'admin') {
       alert("Acceso restringido. Solo el administrador puede entrar aquí.");
       window.location.href = '/';
+    } else {
+      // Activar botón de logout
+      const logoutBtn = document.getElementById('logout-button');
+      const message = document.getElementById('session-message');
+
+      logoutBtn.addEventListener('click', () => {
+        fetch('/cerrarSesion', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams({ correo: data.correo })
+        })
+        .then(() => {
+          message.textContent = "Sesión cerrada correctamente.";
+          setTimeout(() => {
+            window.location.href = '/'; // redirigir al index del cliente
+          }, 2000);
+        })
+        .catch(() => {
+          message.textContent = "Error al cerrar sesión.";
+          setTimeout(() => message.textContent = "", 4000);
+        });
+      });
     }
   });
+
 
 // Función para cargar lista de usuarios
 async function cargarUsuarios() {

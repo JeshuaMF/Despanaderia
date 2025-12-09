@@ -250,11 +250,11 @@ app.post('/cerrarSesion', (req, res) => {
     });
 });
 app.get('/estadoSesion', (req, res) => {
-    con.query('SELECT nombre, rol FROM usuarios WHERE sesion_iniciada = 1 LIMIT 1', (err, resultado) => {
-        if (err) return res.json({ error: true });
-        if (resultado.length === 0) return res.json({ sesion: false });
-        res.json({ sesion: true, usuario: resultado[0].nombre, rol: resultado[0].rol });
-    });
+  con.query('SELECT nombre, rol, correo FROM usuarios WHERE sesion_iniciada = 1 LIMIT 1', (err, resultado) => {
+    if (err) return res.json({ error: true });
+    if (resultado.length === 0) return res.json({ sesion: false });
+    res.json({ sesion: true, usuario: resultado[0].nombre, rol: resultado[0].rol, correo: resultado[0].correo });
+  });
 });
 
 const carrito = [];
