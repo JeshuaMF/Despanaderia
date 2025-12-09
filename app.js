@@ -232,15 +232,24 @@ app.post('/registrarUsuario', (req, res) => {
 });
 
 app.post('/iniciarSesion', (req, res) => {
-    const { nombre, contraseña } = req.body;
-    con.query('SELECT * FROM usuarios WHERE nombre = ? AND contraseña = ?', [nombre, contraseña], (err, resultado) => {
-        if (err || resultado.length === 0) return res.send("Credenciales incorrectas");
-        con.query('UPDATE usuarios SET sesion_iniciada = 1 WHERE id = ?', [resultado[0].id], (err) => {
-            if (err) return res.send("Error al iniciar sesión");
-            res.redirect('/');
-        });
+  const { nombre, contraseña } = req.body;
+  con.query('SELECT * FROM usuarios WHERE nombre = ? AND contraseña = ?', [nombre, contraseña], (err, resultado) => {
+    if (err || resultado.length === 0) return res.send("Credenciales incorrectas");
+
+    const usuario = resultado[0];
+
+    con.query('UPDATE usuarios SET sesion_iniciada = 1 WHERE id = ?', [usuario.id], (err) => {
+      if (err) return res.send("Error al iniciar sesión");
+
+      if (usuario.rol === 'admin') {
+        res.redirect('/admin.html');
+      } else {
+        res.redirect('/');
+      }
     });
+  });
 });
+
 
 app.post('/cerrarSesion', (req, res) => {
     const { correo } = req.body;
