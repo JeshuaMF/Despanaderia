@@ -37,7 +37,7 @@ async function cargarCatalogo() {
       <button class="buy-button bg-blue-500 text-white px-4 py-2 rounded-full shadow hover:bg-blue-600 transition flex items-center gap-2"
         data-nombre="${pan.nombre}" 
         data-precio="${pan.precio}">
-        🛒 <span class="text-sm font-semibold">Comprar</span>
+        🛒 <span class="text-sm font-semibold">.</span>
       </button>
     </div>
   ` : ''}
