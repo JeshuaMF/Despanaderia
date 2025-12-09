@@ -183,7 +183,9 @@ fetch('/estadoSesion')
     const message = document.getElementById('session-message');
 
     if (sesionActiva) {
-      icon.innerHTML = `<button id="logout-button" class="text-xl bg-transparent border-none cursor-pointer" title="Cerrar sesión">🔓</button>`;
+      icon.innerHTML = `
+        <button id="logout-button" class="text-xl bg-transparent border-none cursor-pointer" title="Cerrar sesión">🔓</button>
+      `;
 
       document.getElementById('logout-button').addEventListener('click', () => {
         fetch('/cerrarSesion', {
@@ -192,9 +194,9 @@ fetch('/estadoSesion')
           body: new URLSearchParams({ correo: data.correo })
         })
         .then(() => {
+          sesionActiva = false;
           icon.innerHTML = `<a href="/login.html" title="Iniciar sesión">👤</a>`;
           message.textContent = "Sesión cerrada correctamente.";
-          sesionActiva = false;
           deshabilitarAcciones();
           setTimeout(() => message.textContent = "", 4000);
         })
@@ -208,7 +210,5 @@ fetch('/estadoSesion')
       deshabilitarAcciones();
     }
   });
-
-
 cargarCatalogo();
 loadAndRenderCarrito();
