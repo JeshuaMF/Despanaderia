@@ -1,4 +1,38 @@
 const tablaBody = document.querySelector('#tablaCarrito tbody');
+if (tablaBody) {
+  tablaBody.addEventListener('click', async (e) => {
+    const btn = e.target.closest('button[data-id]');
+    if (!btn || !sesionActiva) return;
+    const id = btn.dataset.id;
+
+    try {
+      await fetchJson(`/carrito/eliminar/${id}`, { method: 'DELETE' });
+      await loadAndRenderCarrito();
+    } catch {
+      alert('Error al eliminar del carrito');
+    }
+  });
+
+  tablaBody.addEventListener('change', async (e) => {
+    const input = e.target.closest('input.cantidad-input');
+    if (!input || !sesionActiva) return;
+
+    const id = input.dataset.id;
+    const nuevaCantidad = Number(input.value);
+    if (nuevaCantidad <= 0) return alert('Cantidad inválida');
+
+    try {
+      await fetchJson(`/carrito/actualizar/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cantidad: nuevaCantidad })
+      });
+      await loadAndRenderCarrito();
+    } catch {
+      alert('Error al actualizar cantidad');
+    }
+  });
+}
 const totalEl = document.getElementById('total');
 const contadorEl = document.getElementById('contador');
 const pagarBtn = document.getElementById('pagarBtn');
@@ -123,39 +157,6 @@ document.addEventListener('click', async (e) => {
     await loadAndRenderCarrito();
   } catch {
     alert('Error al agregar al carrito');
-  }
-});
-
-tablaBody.addEventListener('click', async (e) => {
-  const btn = e.target.closest('button[data-id]');
-  if (!btn || !sesionActiva) return;
-  const id = btn.dataset.id;
-
-  try {
-    await fetchJson(`/carrito/eliminar/${id}`, { method: 'DELETE' });
-    await loadAndRenderCarrito();
-  } catch {
-    alert('Error al eliminar del carrito');
-  }
-});
-
-tablaBody.addEventListener('change', async (e) => {
-  const input = e.target.closest('input.cantidad-input');
-  if (!input || !sesionActiva) return;
-
-  const id = input.dataset.id;
-  const nuevaCantidad = Number(input.value);
-  if (nuevaCantidad <= 0) return alert('Cantidad inválida');
-
-  try {
-    await fetchJson(`/carrito/actualizar/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ cantidad: nuevaCantidad })
-    });
-    await loadAndRenderCarrito();
-  } catch {
-    alert('Error al actualizar cantidad');
   }
 });
 
