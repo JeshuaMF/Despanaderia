@@ -43,31 +43,33 @@
     </section>
 
 
-    <section class="bg-gray-900 text-white p-6 rounded-lg shadow max-w-md mx-auto mt-8">
-  <h2 class="text-2xl font-bold mb-4 text-center">Agregar Usuario Cliente</h2>
-  <form method="POST" action="/registrarUsuario" class="space-y-4">
-    <div>
-      <label for="nombre" class="block text-sm font-medium mb-1">Nombre de usuario</label>
-      <input type="text" name="nombre" id="nombre" required
-        class="w-full px-4 py-2 rounded bg-gray-800 text-white border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
-    </div>
-    <div>
-      <label for="correo" class="block text-sm font-medium mb-1">Correo electrónico</label>
-      <input type="email" name="correo" id="correo" required
-        class="w-full px-4 py-2 rounded bg-gray-800 text-white border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
-    </div>
-    <div>
-      <label for="contraseña" class="block text-sm font-medium mb-1">Contraseña</label>
-      <input type="password" name="contraseña" id="contraseña" required
-        class="w-full px-4 py-2 rounded bg-gray-800 text-white border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
-    </div>
-    <button type="submit"
-      class="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded transition shadow">
-      Guardar Usuario
-    </button>
-  </form>
-</section>
+    <section class="crud-section border-t border-gray-700 mt-12 pt-10">
+      <h2 style="color: white; font-size: 24px; margin-bottom: 16px;">Agregar Usuario Cliente</h2>
 
+            <form method="POST" action="/registrarUsuario">
+            <label style="color: white;">Nombre de usuario</label><br>
+            <input type="text" name="nombre" required
+                style="width: 100%; padding: 8px; margin-bottom: 12px; border-radius: 6px; background-color: #2c2c2c; color: white; border: 1px solid #555;"><br>
+
+            <label style="color: white;">Correo electrónico</label><br>
+            <input type="email" name="correo" required
+                style="width: 100%; padding: 8px; margin-bottom: 12px; border-radius: 6px; background-color: #2c2c2c; color: white; border: 1px solid #555;"><br>
+
+            <label style="color: white;">Contraseña</label><br>
+            <input type="password" name="contraseña" required
+                style="width: 100%; padding: 8px; margin-bottom: 16px; border-radius: 6px; background-color: #2c2c2c; color: white; border: 1px solid #555;"><br>
+
+            <button type="submit"
+                style="background-color: #4cd1f3; color: #1a1a1a; font-weight: bold; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer;">
+                Guardar Usuario
+            </button>
+            </form>
+        <div class="crud-actions-card">
+          <h3>Gestión de Usuarios</h3>
+          <a href="/obtenerUsuarios" class="list-link" id="crudUsuariosBtn">Ver/Editar/Borrar Usuarios</a>
+        </div>
+      </div>
+    </section>
   </main>
 
   <script src="admin.js"></script>

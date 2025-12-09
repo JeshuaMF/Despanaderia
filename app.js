@@ -167,7 +167,7 @@ app.get('/editarPan/:id', (req, res) => {
     `);
   });
 });
-//Para los usuarios
+
 app.get('/obtenerUsuarios', (req, res) => {
   con.query('SELECT * FROM usuarios', (err, resultado) => {
     if (err) return res.status(500).send("Error al obtener usuarios.");
