@@ -265,7 +265,12 @@ app.post('/actualizarPan', (req, res) => {
   );
 });
 
-
+app.get('/api/usuarios', (req, res) => {
+  con.query('SELECT id, nombre, correo, rol FROM usuarios', (err, resultado) => {
+    if (err) return res.status(500).json({ error: 'Error al obtener usuarios' });
+    res.json(resultado);
+  });
+});
 
 app.get('/api/panes', (req, res) => {
     con.query('SELECT * FROM panes', (err, resultado) => {

@@ -96,12 +96,16 @@ function deshabilitarAcciones() {
     pagarBtn.classList.add('opacity-50', 'cursor-not-allowed');
     pagarBtn.title = 'Inicia sesión para pagar';
   }
-
-  const mensaje = document.createElement('p');
-  mensaje.textContent = 'Inicia sesión para realizar compras.';
-  mensaje.className = 'text-yellow-400 mt-4 text-center';
-  document.querySelector('.cart-section')?.appendChild(mensaje);
+s
+  if (!document.getElementById('login-warning')) {
+    const mensaje = document.createElement('p');
+    mensaje.id = 'login-warning';
+    mensaje.textContent = 'Inicia sesión para realizar compras.';
+    mensaje.className = 'text-yellow-400 mt-4 text-center';
+    document.querySelector('.cart-section')?.appendChild(mensaje);
+  }
 }
+
 
 document.addEventListener('click', async (e) => {
   const btn = e.target.closest('.buy-button');
