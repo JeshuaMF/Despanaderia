@@ -1,4 +1,3 @@
-// Referencias de DOM (se usan con guardas)
 const tablaBody = document.querySelector('#tablaCarrito tbody');
 const totalEl = document.getElementById('total');
 const contadorEl = document.getElementById('contador');
