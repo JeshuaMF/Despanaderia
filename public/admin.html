@@ -47,13 +47,14 @@
       <h2 class="text-4xl font-bold text-center mb-10">Administración de Usuarios</h2>
       <div class="crud-container mx-auto">
         <div class="crud-form">
-          <h3>Agregar Usuario Cliente</h3>
-          <form method="POST" action="/registrarUsuario">
-            <input type="text" name="nombre" placeholder="Nombre de usuario" required>
-            <input type="email" name="correo" placeholder="Correo electrónico" required>
-            <input type="password" name="contraseña" placeholder="Contraseña" required>
-            <button type="submit">Guardar Usuario</button>
-          </form>
+            <h3>Agregar Usuario Cliente</h3>
+                <form method="POST" action="/registrarUsuario">
+                <input type="text" name="nombre" placeholder="Nombre de usuario" required class="w-full p-2 mb-2 bg-gray-800 text-white rounded">
+                <input type="email" name="correo" placeholder="Correo electrónico" required class="w-full p-2 mb-2 bg-gray-800 text-white rounded">
+                <input type="password" name="contraseña" placeholder="Contraseña" required class="w-full p-2 mb-2 bg-gray-800 text-white rounded">
+                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Guardar Usuario</button>
+            </form>
+
         </div>
         <div class="crud-actions-card">
           <h3>Gestión de Usuarios</h3>

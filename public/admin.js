@@ -10,8 +10,6 @@ async function fetchJson(url, opts) {
   }
 }
 
-// Verificar sesión y rol
-// Verificar sesión y rol
 fetch('/estadoSesion')
   .then(res => res.json())
   .then(data => {
@@ -44,7 +42,6 @@ fetch('/estadoSesion')
   });
 
 
-// Función para cargar lista de usuarios
 async function cargarUsuarios() {
   const usuarios = await fetchJson('/api/usuarios');
   const contenedor = document.getElementById('usuarios-list');
@@ -65,7 +62,6 @@ async function cargarUsuarios() {
   });
 }
 
-// Función para cargar lista de panes con stock
 async function cargarPanes() {
   const panes = await fetchJson('/api/panes');
   const contenedor = document.getElementById('panes-list');

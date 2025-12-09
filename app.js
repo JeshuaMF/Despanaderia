@@ -114,7 +114,7 @@ app.get('/obtenerPanes', (req, res) => {
             ${panesHTML}
           </tbody>
         </table>
-        <a href="/">Volver a la Tienda</a>
+        <a href="/admin.html">Volver a la Tienda</a>
       </body>
       </html>
     `);
@@ -171,6 +171,63 @@ app.get('/editarPan/:id', (req, res) => {
           </form>
           <a href="/obtenerPanes">Cancelar y Volver a la Lista</a>
         </div>
+      </body>
+      </html>
+    `);
+  });
+});
+//Para los usuarios
+app.get('/obtenerUsuarios', (req, res) => {
+  con.query('SELECT * FROM usuarios', (err, resultado) => {
+    if (err) return res.status(500).send("Error al obtener usuarios.");
+
+    let usuariosHTML = ``;
+    resultado.forEach(u => {
+      usuariosHTML += `<tr>
+        <td>${u.id}</td>
+        <td>${u.nombre}</td>
+        <td>${u.correo}</td>
+        <td>${u.rol}</td>
+        <td>
+          <form method="POST" action="/borrarUsuario" onsubmit="return confirm('¿Eliminar ${u.nombre}?');">
+            <input type="hidden" name="id" value="${u.id}">
+            <button class="delete-button">Eliminar</button>
+          </form>
+        </td>
+      </tr>`;
+    });
+
+    res.send(`
+      <!DOCTYPE html>
+      <html lang="es">
+      <head>
+        <title>Lista de Usuarios</title>
+        <style>
+          body { font-family: 'Inter', sans-serif; background-color: #1a1a1a; color: white; padding: 20px; }
+          table { width: 90%; border-collapse: collapse; margin: 20px auto; background-color: #2c2c2c; border-radius: 8px; overflow: hidden; }
+          th, td { border: 1px solid #444; padding: 12px; text-align: left; }
+          th { background-color: #333; font-weight: 600; }
+          .delete-button { background-color: #e74c3c; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; color: white; font-weight: 600; }
+          a { color: #61DAFB; text-decoration: none; margin-top: 20px; display: inline-block; }
+        </style>
+      </head>
+      <body>
+        <h2>Lista de Usuarios Registrados</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nombre</th>
+              <th>Correo</th>
+              <th>Rol</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${usuariosHTML}
+          </tbody>
+        </table>
+        <a href="/admin.html">Volver al Panel Admin</a>
       </body>
       </html>
     `);
