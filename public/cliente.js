@@ -185,34 +185,55 @@ fetch('/estadoSesion')
 
     const icon = document.getElementById('session-icon');
     const message = document.getElementById('session-message');
+    const userIcon = document.getElementById('user-menu-icon');
+    const userMenu = document.getElementById('user-menu');
+    const addFundsBtn = document.getElementById('add-funds-btn');
+    const fundsForm = document.getElementById('funds-form');
+    const formAddFunds = document.getElementById('form-add-funds');
 
     if (sesionActiva) {
-      icon.innerHTML = `
-        <button id="logout-button" class="text-xl bg-transparent border-none cursor-pointer" title="Cerrar sesión">🔓</button>
-      `;
+      icon.innerHTML = `<button id="logout-button" class="text-xl bg-transparent border-none cursor-pointer" title="Cerrar sesión">🔓</button>`;
+      userIcon.classList.remove('opacity-50', 'cursor-not-allowed');
+      userIcon.classList.add('cursor-pointer');
+      userMenu.classList.remove('hidden');
 
-      document.getElementById('logout-button').addEventListener('click', () => {
-        fetch('/cerrarSesion', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: new URLSearchParams({ correo: data.correo })
-        })
-        .then(() => {
-          sesionActiva = false;
-          icon.innerHTML = `<a href="/login.html" title="Iniciar sesión">👤</a>`;
-          message.textContent = "Sesión cerrada correctamente.";
-          deshabilitarAcciones();
-          setTimeout(() => message.textContent = "", 4000);
-        })
-        .catch(() => {
-          message.textContent = "Error al cerrar sesión.";
-          setTimeout(() => message.textContent = "", 4000);
-        });
+      // Mostrar mini formulario al dar click en "Agregar fondos"
+      addFundsBtn.addEventListener('click', () => {
+        fundsForm.classList.toggle('hidden');
+      });
+
+      // Enviar formulario de agregar fondos
+      formAddFunds.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const cantidad = e.target.cantidad.value;
+
+        try {
+          const res = await fetch('/agregarFondos', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ correo: data.correo, cantidad })
+          });
+
+          const result = await res.json();
+          if (result.ok) {
+            alert('Fondos agregados correctamente.');
+            fundsForm.classList.add('hidden');
+          } else {
+            alert(result.error || 'Error al agregar fondos.');
+          }
+        } catch {
+          alert('Error en la operación.');
+        }
       });
     } else {
       icon.innerHTML = `<a href="/login.html" title="Iniciar sesión">👤</a>`;
+      userIcon.classList.add('opacity-50', 'cursor-not-allowed');
+      userIcon.classList.remove('cursor-pointer');
+      userMenu.classList.add('hidden');
+      fundsForm.classList.add('hidden');
       deshabilitarAcciones();
     }
   });
+
 cargarCatalogo();
 loadAndRenderCarrito();
