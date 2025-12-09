@@ -322,12 +322,19 @@ app.post('/cerrarSesion', (req, res) => {
     });
 });
 app.get('/estadoSesion', (req, res) => {
-  con.query('SELECT nombre, rol, correo FROM usuarios WHERE sesion_iniciada = 1 LIMIT 1', (err, resultado) => {
+  con.query('SELECT nombre, rol, correo, fondos FROM usuarios WHERE sesion_iniciada = 1 LIMIT 1', (err, resultado) => {
     if (err) return res.json({ error: true });
     if (resultado.length === 0) return res.json({ sesion: false });
-    res.json({ sesion: true, usuario: resultado[0].nombre, rol: resultado[0].rol, correo: resultado[0].correo });
+    res.json({
+      sesion: true,
+      usuario: resultado[0].nombre,
+      rol: resultado[0].rol,
+      correo: resultado[0].correo,
+      fondos: resultado[0].fondos
+    });
   });
 });
+
 
 
 const carrito = [];
@@ -353,7 +360,6 @@ app.delete('/carrito/eliminar/:id', (req, res) => {
   res.json({ ok: true });
 });
 
-// --- Ruta de compra con actualización de stock ---
 app.post('/carrito/compra', (req, res) => {
   con.query('SELECT id, fondos FROM usuarios WHERE sesion_iniciada = 1 LIMIT 1', (err, resultado) => {
     if (err || resultado.length === 0) {
@@ -362,15 +368,12 @@ app.post('/carrito/compra', (req, res) => {
     const usuarioId = resultado[0].id;
     let fondosActuales = resultado[0].fondos;
 
-    // Calcular total del carrito
     let totalCompra = carrito.reduce((acc, item) => acc + (item.precio * item.cantidad), 0);
 
-    // Validar fondos
     if (fondosActuales < totalCompra) {
       return res.status(400).json({ error: `Fondos insuficientes. Necesitas $${totalCompra}, tienes $${fondosActuales}` });
     }
 
-    // Validar stock antes de procesar
     let erroresStock = [];
     let pendientes = carrito.length;
     carrito.forEach(item => {
@@ -390,10 +393,8 @@ app.post('/carrito/compra', (req, res) => {
             return res.status(400).json({ error: erroresStock.join(', ') });
           }
 
-          // Descontar fondos
           con.query('UPDATE usuarios SET fondos = fondos - ? WHERE id = ?', [totalCompra, usuarioId]);
 
-          // Procesar compra y actualizar stock
           carrito.forEach(item => {
             con.query(
               'INSERT INTO compras (usuario_id, nombre_pan, precio, cantidad, numero_venta) VALUES (?, ?, ?, ?, ?)',
@@ -406,7 +407,7 @@ app.post('/carrito/compra', (req, res) => {
             );
           });
 
-          carrito.length = 0; // Vaciar carrito
+          carrito.length = 0;
           return res.json({ ok: true, mensaje: `Compra realizada. Se descontaron $${totalCompra} de tus fondos.` });
         }
       });

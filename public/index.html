@@ -9,31 +9,26 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.5.1/dist/leaflet.css" />
 </head>
 <body class="bg-gray-900 text-white">
-  <header class="navbar flex justify-between items-center mx-auto mt-4 max-w-7xl">
-  <div class="logo text-2xl font-bold">Despanadería</div>
-  <div class="nav-icons flex items-center space-x-4">
-    <span id="session-icon" class="text-xl cursor-pointer hover:text-gray-400 transition" title="Iniciar sesión">
-        👤
-    </span>
-    <div class="relative group">
-        <span id="user-menu-icon" class="text-xl opacity-50 cursor-not-allowed transition" title="Opciones de usuario">🧑</span>
+  <header class="flex justify-between items-center px-6 py-4 bg-gray-900 text-white">
+  <h1 class="text-2xl font-bold">Despanadería</h1>
 
-  <div id="user-menu" class="absolute right-0 mt-2 w-48 bg-gray-800 border border-gray-700 rounded shadow-lg hidden group-hover:block z-10">
-    <button id="add-funds-btn" class="w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-700">Agregar fondos</button>
-    <a href="/tickets.html" class="block px-4 py-2 text-sm text-white hover:bg-gray-700">Tickets de compra</a>
-  </div>
-
-  <div id="funds-form" class="absolute right-0 mt-2 w-56 bg-gray-800 border border-gray-700 rounded shadow-lg hidden p-4 z-20">
-    <form id="form-add-funds">
-      <label class="block text-sm mb-2 text-white">Cantidad a agregar:</label>
-      <input type="number" name="cantidad" min="1" required class="w-full p-2 mb-2 bg-gray-700 text-white rounded">
-      <button type="submit" class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">Agregar</button>
-    </form>
-  </div>
-</div>
-
+  <div class="flex items-center space-x-6">
+    <button id="add-funds-btn" disabled class="text-sm bg-gray-800 px-3 py-1 rounded opacity-50 cursor-not-allowed">Agregar fondos</button>
+    <a id="tickets-link" href="#" class="text-sm bg-gray-800 px-3 py-1 rounded opacity-50 cursor-not-allowed pointer-events-none">Tickets de compra</a>
+    <span id="session-icon" class="text-xl cursor-pointer hover:text-gray-400 transition" title="Iniciar sesión">👤</span>
+    <span id="user-funds" class="text-sm text-green-400 font-semibold"></span>
   </div>
 </header>
+
+
+<div id="funds-form" class="hidden w-64 mx-auto mt-4 bg-gray-800 border border-gray-700 rounded shadow-lg p-4">
+  <form id="form-add-funds">
+    <label class="block text-sm mb-2 text-white">Cantidad a agregar:</label>
+    <input type="number" name="cantidad" min="1" required class="w-full p-2 mb-2 bg-gray-700 text-white rounded">
+    <button type="submit" class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">Agregar</button>
+  </form>
+</div>
+
 <div id="session-message" class="text-sm text-green-400 mt-2 text-center"></div>
 
   <div id="session-message" class="text-sm text-green-400 mt-2 text-center"></div>

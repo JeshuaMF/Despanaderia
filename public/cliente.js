@@ -186,25 +186,31 @@ fetch('/estadoSesion')
     sesionActiva = data.sesion;
 
     const icon = document.getElementById('session-icon');
-    const message = document.getElementById('session-message');
-    const userIcon = document.getElementById('user-menu-icon');
-    const userMenu = document.getElementById('user-menu');
     const addFundsBtn = document.getElementById('add-funds-btn');
+    const ticketsLink = document.getElementById('tickets-link');
     const fundsForm = document.getElementById('funds-form');
     const formAddFunds = document.getElementById('form-add-funds');
+    const userFunds = document.getElementById('user-funds');
 
     if (sesionActiva) {
       icon.innerHTML = `<button id="logout-button" class="text-xl bg-transparent border-none cursor-pointer" title="Cerrar sesión">🔓</button>`;
-      userIcon.classList.remove('opacity-50', 'cursor-not-allowed');
-      userIcon.classList.add('cursor-pointer');
-      userMenu.classList.remove('hidden');
+      document.getElementById('logout-button').addEventListener('click', cerrarSesion);
 
-      // Mostrar mini formulario al dar click en "Agregar fondos"
+      // Mostrar fondos actuales
+      userFunds.textContent = `Fondos: $${data.fondos}`;
+
+      // Activar botones
+      addFundsBtn.disabled = false;
+      addFundsBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+      ticketsLink.classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+      ticketsLink.href = "/tickets.html";
+
+      // Mostrar formulario de fondos
       addFundsBtn.addEventListener('click', () => {
         fundsForm.classList.toggle('hidden');
       });
 
-      // Enviar formulario de agregar fondos
+      // Enviar fondos
       formAddFunds.addEventListener('submit', async (e) => {
         e.preventDefault();
         const cantidad = e.target.cantidad.value;
@@ -220,6 +226,8 @@ fetch('/estadoSesion')
           if (result.ok) {
             alert('Fondos agregados correctamente.');
             fundsForm.classList.add('hidden');
+            // 🔄 Actualizar fondos en pantalla
+            userFunds.textContent = `Fondos: $${result.nuevosFondos}`;
           } else {
             alert(result.error || 'Error al agregar fondos.');
           }
@@ -229,13 +237,37 @@ fetch('/estadoSesion')
       });
     } else {
       icon.innerHTML = `<a href="/login.html" title="Iniciar sesión">👤</a>`;
-      userIcon.classList.add('opacity-50', 'cursor-not-allowed');
-      userIcon.classList.remove('cursor-pointer');
-      userMenu.classList.add('hidden');
+      userFunds.textContent = "";
+      addFundsBtn.disabled = true;
+      addFundsBtn.classList.add('opacity-50', 'cursor-not-allowed');
+      ticketsLink.classList.add('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+      ticketsLink.href = "#";
       fundsForm.classList.add('hidden');
       deshabilitarAcciones();
     }
+
+    function cerrarSesion() {
+      fetch('/cerrarSesion', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ correo: data.correo })
+      })
+      .then(() => {
+        sesionActiva = false;
+        icon.innerHTML = `<a href="/login.html" title="Iniciar sesión">👤</a>`;
+        userFunds.textContent = "";
+        addFundsBtn.disabled = true;
+        addFundsBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        ticketsLink.classList.add('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+        ticketsLink.href = "#";
+        fundsForm.classList.add('hidden');
+        deshabilitarAcciones();
+      });
+    }
   });
+
+
+
 
 cargarCatalogo();
 loadAndRenderCarrito();
