@@ -441,11 +441,16 @@ app.post('/agregarFondos', (req, res) => {
     return res.json({ ok: false, error: 'Cantidad inválida' });
   }
 
+  con.query('UPDATE usuarios SET fondos = fondos + ? WHERE correo = ?', [monto, correo], (err) => {
+    if (err) return res.json({ ok: false, error: 'Error al actualizar fondos' });
+
     con.query('SELECT fondos FROM usuarios WHERE correo = ?', [correo], (err2, rows) => {
-    if (err2 || !rows.length) return res.json({ ok: false, error: 'No se pudo obtener fondos' });
-    res.json({ ok: true, nuevosFondos: rows[0].fondos });
+      if (err2 || !rows.length) return res.json({ ok: false, error: 'No se pudo obtener fondos' });
+      res.json({ ok: true, nuevosFondos: rows[0].fondos });
     });
+  });
 });
+
 
 app.get('/comprasUsuario', (req, res) => {
   con.query('SELECT id FROM usuarios WHERE sesion_iniciada = 1 LIMIT 1', (err, resultado) => {
