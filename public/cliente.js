@@ -1,4 +1,142 @@
+// Referencias de DOM (se usan con guardas)
 const tablaBody = document.querySelector('#tablaCarrito tbody');
+const totalEl = document.getElementById('total');
+const contadorEl = document.getElementById('contador');
+const pagarBtn = document.getElementById('pagarBtn');
+const grid = document.getElementById('product-grid');
+let sesionActiva = false;
+
+// Utilidad fetch con manejo de errores
+async function fetchJson(url, opts) {
+  try {
+    const res = await fetch(url, opts);
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
+  } catch (err) {
+    console.error(err);
+    throw err;
+  }
+}
+
+// Catálogo
+async function cargarCatalogo() {
+  if (!grid) return; // solo si existe el contenedor de productos
+  const panes = await fetchJson('/api/panes');
+  grid.innerHTML = '';
+
+  panes.forEach(pan => {
+    const card = document.createElement('div');
+    card.className = 'product-card bg-gray-800 p-4 rounded-lg shadow';
+
+    card.innerHTML = `
+      <img src="${pan.imagen_url}" alt="${pan.nombre}" class="w-full h-32 object-cover rounded mb-4">
+      <h3 class="text-xl font-semibold">${pan.nombre}</h3>
+      <p class="text-sm text-gray-400 mt-1">${pan.ingredientes}</p>
+      <p class="text-sm text-yellow-400 mt-1">Stock disponible: ${pan.stock}</p>
+      <div class="flex justify-between items-center mt-4">
+        <span class="price">$${pan.precio}</span>
+        <button class="buy-button bg-blue-500 text-white px-3 py-1 rounded" 
+          data-nombre="${pan.nombre}" 
+          data-precio="${pan.precio}">🛒</button>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+
+  if (!sesionActiva) deshabilitarAcciones();
+}
+
+// Carrito
+async function loadAndRenderCarrito() {
+  if (!tablaBody) return; // solo si existe la tabla del carrito
+  const cart = await fetchJson('/carrito');
+  tablaBody.innerHTML = '';
+  let total = 0;
+
+  cart.forEach(item => {
+    const subtotal = item.precio * item.cantidad;
+    total += subtotal;
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${item.nombre}</td>
+      <td>$${item.precio.toFixed(2)}</td>
+      <td>
+        <input type="number" min="1" value="${item.cantidad}" 
+          class="cantidad-input bg-gray-700 text-white px-2 py-1 rounded w-16" 
+          data-id="${item.id}">
+      </td>
+      <td>$${subtotal.toFixed(2)}</td>
+      <td><button class="btn-small text-red-500" data-id="${item.id}">Eliminar</button></td>
+    `;
+    tablaBody.appendChild(tr);
+  });
+
+  if (totalEl) totalEl.textContent = total.toFixed(2);
+  if (contadorEl) contadorEl.textContent = `(${cart.length})`;
+
+  if (!sesionActiva) deshabilitarAcciones();
+}
+
+// Deshabilitar acciones (solo aplica si los elementos existen)
+function deshabilitarAcciones() {
+  document.querySelectorAll('.buy-button').forEach(btn => {
+    btn.disabled = true;
+    btn.classList.add('opacity-50', 'cursor-not-allowed');
+    btn.title = 'Inicia sesión para comprar';
+  });
+
+  document.querySelectorAll('.cantidad-input').forEach(input => {
+    input.disabled = true;
+    input.classList.add('opacity-50', 'cursor-not-allowed');
+    input.title = 'Inicia sesión para modificar cantidades';
+  });
+
+  document.querySelectorAll('button[data-id]').forEach(btn => {
+    btn.disabled = true;
+    btn.classList.add('opacity-50', 'cursor-not-allowed');
+    btn.title = 'Inicia sesión para eliminar del carrito';
+  });
+
+  if (pagarBtn) {
+    // Tu lógica: pagar habilitado para ver mensaje aunque no haya sesión
+    pagarBtn.disabled = false;
+    pagarBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+    pagarBtn.title = '';
+  }
+
+  if (!document.getElementById('login-warning')) {
+    const mensaje = document.createElement('p');
+    mensaje.id = 'login-warning';
+    mensaje.textContent = 'Inicia sesión para realizar compras.';
+    mensaje.className = 'text-yellow-400 mt-4 text-center';
+    const cartSection = document.querySelector('.cart-section');
+    cartSection?.appendChild(mensaje);
+  }
+}
+
+// Evento global para agregar al carrito (no depende de tener grid/tabla)
+document.addEventListener('click', async (e) => {
+  const btn = e.target.closest('.buy-button');
+  if (!btn || !sesionActiva) return;
+
+  const nombre = btn.dataset.nombre;
+  const precio = Number(btn.dataset.precio);
+  const cantidad = 1;
+
+  try {
+    await fetchJson('/carrito/agregar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nombre, precio, cantidad })
+    });
+    await loadAndRenderCarrito();
+  } catch {
+    alert('Error al agregar al carrito');
+  }
+});
+
+// Eventos del carrito (solo si existe la tabla)
 if (tablaBody) {
   tablaBody.addEventListener('click', async (e) => {
     const btn = e.target.closest('button[data-id]');
@@ -33,145 +171,21 @@ if (tablaBody) {
     }
   });
 }
-const totalEl = document.getElementById('total');
-const contadorEl = document.getElementById('contador');
-const pagarBtn = document.getElementById('pagarBtn');
-const grid = document.getElementById('product-grid');
-let sesionActiva = false;
 
-async function fetchJson(url, opts) {
-  try {
-    const res = await fetch(url, opts);
-    if (!res.ok) throw new Error(await res.text());
-    return res.json();
-  } catch (err) {
-    console.error(err);
-    throw err;
-  }
-}
-
-async function cargarCatalogo() {
-  const panes = await fetchJson('/api/panes');
-  grid.innerHTML = '';
-
-  panes.forEach(pan => {
-    const card = document.createElement('div');
-    card.className = 'product-card bg-gray-800 p-4 rounded-lg shadow';
-
-   card.innerHTML = `
-  <img src="${pan.imagen_url}" alt="${pan.nombre}" class="w-full h-32 object-cover rounded mb-4">
-  <h3 class="text-xl font-semibold">${pan.nombre}</h3>
-  <p class="text-sm text-gray-400 mt-1">${pan.ingredientes}</p>
-  <p class="text-sm text-yellow-400 mt-1">Stock disponible: ${pan.stock}</p>
-  <div class="flex justify-between items-center mt-4">
-    <span class="price">$${pan.precio}</span>
-    <button class="buy-button bg-blue-500 text-white px-3 py-1 rounded" 
-      data-nombre="${pan.nombre}" 
-      data-precio="${pan.precio}">🛒</button>
-  </div>
-`;
-    grid.appendChild(card);
-  });
-
-  if (!sesionActiva) deshabilitarAcciones();
-}
-
-async function loadAndRenderCarrito() {
-  const cart = await fetchJson('/carrito');
-  tablaBody.innerHTML = '';
-  let total = 0;
-
-  cart.forEach(item => {
-    const subtotal = item.precio * item.cantidad;
-    total += subtotal;
-
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${item.nombre}</td>
-      <td>$${item.precio.toFixed(2)}</td>
-      <td>
-        <input type="number" min="1" value="${item.cantidad}" 
-          class="cantidad-input bg-gray-700 text-white px-2 py-1 rounded w-16" 
-          data-id="${item.id}">
-      </td>
-      <td>$${subtotal.toFixed(2)}</td>
-      <td><button class="btn-small text-red-500" data-id="${item.id}">Eliminar</button></td>
-    `;
-    tablaBody.appendChild(tr);
-  });
-
-  totalEl.textContent = total.toFixed(2);
-  contadorEl.textContent = `(${cart.length})`;
-
-  if (!sesionActiva) deshabilitarAcciones();
-}
-
-function deshabilitarAcciones() {
-  document.querySelectorAll('.buy-button').forEach(btn => {
-    btn.disabled = true;
-    btn.classList.add('opacity-50', 'cursor-not-allowed');
-    btn.title = 'Inicia sesión para comprar';
-  });
-
-  document.querySelectorAll('.cantidad-input').forEach(input => {
-    input.disabled = true;
-    input.classList.add('opacity-50', 'cursor-not-allowed');
-    input.title = 'Inicia sesión para modificar cantidades';
-  });
-
-  document.querySelectorAll('button[data-id]').forEach(btn => {
-    btn.disabled = true;
-    btn.classList.add('opacity-50', 'cursor-not-allowed');
-    btn.title = 'Inicia sesión para eliminar del carrito';
-  });
-
-  if (pagarBtn) {
-  pagarBtn.disabled = false;
-  pagarBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-  pagarBtn.title = '';
-}
-  if (!document.getElementById('login-warning')) {
-    const mensaje = document.createElement('p');
-    mensaje.id = 'login-warning';
-    mensaje.textContent = 'Inicia sesión para realizar compras.';
-    mensaje.className = 'text-yellow-400 mt-4 text-center';
-    document.querySelector('.cart-section')?.appendChild(mensaje);
-  }
-}
-
-
-document.addEventListener('click', async (e) => {
-  const btn = e.target.closest('.buy-button');
-  if (!btn || !sesionActiva) return;
-
-  const nombre = btn.dataset.nombre;
-  const precio = Number(btn.dataset.precio);
-  const cantidad = 1;
-
-  try {
-    await fetchJson('/carrito/agregar', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nombre, precio, cantidad })
-    });
-    await loadAndRenderCarrito();
-  } catch {
-    alert('Error al agregar al carrito');
-  }
-});
-
+// Botón pagar (solo si existe)
 if (pagarBtn) {
   pagarBtn.addEventListener('click', async () => {
     if (!sesionActiva) {
-    alert('Inicia sesión para pagar');
-    return;
-  }
+      alert('Inicia sesión para pagar');
+      return;
+    }
     try {
       const res = await fetchJson('/carrito/compra', { method: 'POST' });
 
       if (res.ok) {
         alert(res.mensaje || 'Compra registrada correctamente.');
-        document.getElementById('user-funds').textContent = `Fondos: $${res.nuevosFondos}`;
+        const userFunds = document.getElementById('user-funds');
+        if (userFunds) userFunds.textContent = `Fondos: $${res.nuevosFondos}`;
         await loadAndRenderCarrito();
         await cargarCatalogo();
       } else {
@@ -183,6 +197,7 @@ if (pagarBtn) {
   });
 }
 
+// Estado de sesión (siempre se puede consultar)
 fetch('/estadoSesion')
   .then(res => res.json())
   .then(data => {
@@ -196,53 +211,64 @@ fetch('/estadoSesion')
     const userFunds = document.getElementById('user-funds');
 
     if (sesionActiva) {
-      icon.innerHTML = `<button id="logout-button" class="text-xl bg-transparent border-none cursor-pointer" title="Cerrar sesión">🔓</button>`;
-      const logoutBtn = document.getElementById('logout-button');
-      if (logoutBtn) {
-        logoutBtn.addEventListener('click', cerrarSesion);
+      if (icon) {
+        icon.innerHTML = `<button id="logout-button" class="text-xl bg-transparent border-none cursor-pointer" title="Cerrar sesión">🔓</button>`;
+        const logoutBtn = document.getElementById('logout-button');
+        logoutBtn?.addEventListener('click', cerrarSesion);
       }
-      userFunds.textContent = `Fondos: $${data.fondos}`;
 
-      addFundsBtn.disabled = false;
-      addFundsBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-      ticketsLink.classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
-      ticketsLink.href = "/historial.html";
+      if (userFunds) userFunds.textContent = `Fondos: $${data.fondos}`;
 
-      addFundsBtn.addEventListener('click', () => {
-        fundsForm.classList.toggle('hidden');
-      });
+      if (addFundsBtn) {
+        addFundsBtn.disabled = false;
+        addFundsBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        addFundsBtn.addEventListener('click', () => {
+          fundsForm?.classList.toggle('hidden');
+        });
+      }
 
-      formAddFunds.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const cantidad = e.target.cantidad.value;
+      if (ticketsLink) {
+        ticketsLink.classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+        ticketsLink.href = "/historial.html";
+      }
 
-        try {
-          const res = await fetch('/agregarFondos', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ correo: data.correo, cantidad })
-          });
+      if (formAddFunds) {
+        formAddFunds.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const cantidad = e.target.cantidad.value;
 
-          const result = await res.json();
-          if (result.ok) {
-            alert('Fondos agregados correctamente.');
-            fundsForm.classList.add('hidden');
-            userFunds.textContent = `Fondos: $${result.nuevosFondos}`;
-          } else {
-            alert(result.error || 'Error al agregar fondos.');
+          try {
+            const res = await fetch('/agregarFondos', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ correo: data.correo, cantidad })
+            });
+
+            const result = await res.json();
+            if (result.ok) {
+              alert('Fondos agregados correctamente.');
+              fundsForm?.classList.add('hidden');
+              if (userFunds) userFunds.textContent = `Fondos: $${result.nuevosFondos}`;
+            } else {
+              alert(result.error || 'Error al agregar fondos.');
+            }
+          } catch {
+            alert('Error en la operación.');
           }
-        } catch {
-          alert('Error en la operación.');
-        }
-      });
+        });
+      }
     } else {
-      icon.innerHTML = `<a href="/login.html" title="Iniciar sesión">👤</a>`;
-      userFunds.textContent = "";
-      addFundsBtn.disabled = true;
-      addFundsBtn.classList.add('opacity-50', 'cursor-not-allowed');
-      ticketsLink.classList.add('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
-      ticketsLink.href = "#";
-      fundsForm.classList.add('hidden');
+      if (icon) icon.innerHTML = `<a href="/login.html" title="Iniciar sesión">👤</a>`;
+      if (userFunds) userFunds.textContent = "";
+      if (addFundsBtn) {
+        addFundsBtn.disabled = true;
+        addFundsBtn.classList.add('opacity-50', 'cursor-not-allowed');
+      }
+      if (ticketsLink) {
+        ticketsLink.classList.add('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+        ticketsLink.href = "#";
+      }
+      fundsForm?.classList.add('hidden');
       deshabilitarAcciones();
     }
 
@@ -254,20 +280,26 @@ fetch('/estadoSesion')
       })
       .then(() => {
         sesionActiva = false;
-        icon.innerHTML = `<a href="/login.html" title="Iniciar sesión">👤</a>`;
-        userFunds.textContent = "";
-        addFundsBtn.disabled = true;
-        addFundsBtn.classList.add('opacity-50', 'cursor-not-allowed');
-        ticketsLink.classList.add('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
-        ticketsLink.href = "#";
-        fundsForm.classList.add('hidden');
+        if (icon) icon.innerHTML = `<a href="/login.html" title="Iniciar sesión">👤</a>`;
+        if (userFunds) userFunds.textContent = "";
+        if (addFundsBtn) {
+          addFundsBtn.disabled = true;
+          addFundsBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        }
+        if (ticketsLink) {
+          ticketsLink.classList.add('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+          ticketsLink.href = "#";
+        }
+        fundsForm?.classList.add('hidden');
         deshabilitarAcciones();
       });
     }
   });
 
+// Historial
 async function cargarHistorial() {
   const contenedor = document.getElementById('historial-container');
+  if (!contenedor) return;
   contenedor.innerHTML = '';
 
   try {
@@ -292,7 +324,6 @@ async function cargarHistorial() {
         <p class="text-sm text-gray-400 mt-2">Fecha: ${new Date(compra.fecha).toLocaleString()}</p>
         <p class="text-xs text-gray-500">Venta #${compra.numero_venta}</p>
       `;
-
       contenedor.appendChild(tarjeta);
     });
   } catch {
@@ -300,9 +331,10 @@ async function cargarHistorial() {
   }
 }
 
+// Inicialización condicional según página
 if (window.location.pathname.includes('historial.html')) {
   cargarHistorial();
 }
+if (grid) cargarCatalogo();
+if (tablaBody) loadAndRenderCarrito();
 
-cargarCatalogo();
-loadAndRenderCarrito();
