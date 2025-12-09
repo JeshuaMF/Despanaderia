@@ -27,19 +27,18 @@ async function cargarCatalogo() {
     card.className = 'product-card bg-gray-800 p-4 rounded-lg shadow';
 
     card.innerHTML = `
-  <img src="${pan.imagen_url}" ...>
-  <h3>${pan.nombre}</h3>
-  <p>${pan.ingredientes}</p>
-  <p>Stock disponible: ${pan.stock}</p>
-  <div class="flex justify-between items-center mt-4">
-    <span class="price">$${pan.precio}</span>
-    ${sesionActiva ? `
-      <button class="buy-button bg-blue-500 text-white px-3 py-1 rounded" 
-        data-nombre="${pan.nombre}" 
-        data-precio="${pan.precio}">🛒</button>
-    ` : ''}
-  </div>
+  <img src="${pan.imagen_url}" alt="${pan.nombre}" class="w-full h-32 object-cover rounded mb-4">
+  <h3 class="text-xl font-semibold mb-2">${pan.nombre}</h3>
+  <p class="text-sm text-gray-400">Ingredientes: ${pan.ingredientes}</p>
+  <p class="text-sm text-yellow-400 font-semibold mt-1">Stock disponible: ${pan.stock}</p>
+  <p class="text-lg text-white font-bold mt-2">$${Number(pan.precio).toFixed(2)}</p>
+  ${sesionActiva ? `
+    <button class="buy-button bg-blue-500 text-white px-3 py-1 rounded mt-3" 
+      data-nombre="${pan.nombre}" 
+      data-precio="${pan.precio}">🛒 Comprar</button>
+  ` : ''}
 `;
+
     grid.appendChild(card);
   });
 
