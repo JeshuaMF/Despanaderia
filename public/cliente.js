@@ -33,10 +33,12 @@ async function cargarCatalogo() {
       <p class="text-sm text-yellow-400 mt-1">Stock disponible: ${pan.stock}</p>
       <div class="flex justify-between items-center mt-4">
         <span class="price">$${pan.precio}</span>
-        <button class="buy-button bg-blue-500 text-white px-3 py-1 rounded" 
-          data-nombre="${pan.nombre}" 
-          data-precio="${pan.precio}">🛒</button>
-      </div>
+        ${sesionActiva ? `
+      <button class="buy-button bg-blue-500 text-white px-3 py-1 rounded" 
+    data-nombre="${pan.nombre}" 
+    data-precio="${pan.precio}">🛒</button>
+` : ''}
+
     `;
     grid.appendChild(card);
   });
