@@ -1,9 +1,10 @@
 const tablaBody = document.querySelector('#tablaCarrito tbody');
 const totalEl = document.getElementById('total');
 const contadorEl = document.getElementById('contador');
-const pagarBtn = document.getElementById('pagarBtn');
+const pagarBtn = document.getElementById('pagar-btn'); // usa siempre este id
 const grid = document.getElementById('product-grid');
 let sesionActiva = false;
+let correoUsuario = null;
 
 async function fetchJson(url, opts) {
   try {
@@ -24,18 +25,18 @@ async function cargarCatalogo() {
     const card = document.createElement('div');
     card.className = 'product-card bg-gray-800 p-4 rounded-lg shadow';
 
-   card.innerHTML = `
-  <img src="${pan.imagen_url}" alt="${pan.nombre}" class="w-full h-32 object-cover rounded mb-4">
-  <h3 class="text-xl font-semibold">${pan.nombre}</h3>
-  <p class="text-sm text-gray-400 mt-1">${pan.ingredientes}</p>
-  <p class="text-sm text-yellow-400 mt-1">Stock disponible: ${pan.stock}</p>
-  <div class="flex justify-between items-center mt-4">
-    <span class="price">Rs. ${pan.precio}/-</span>
-    <button class="buy-button bg-blue-500 text-white px-3 py-1 rounded" 
-      data-nombre="${pan.nombre}" 
-      data-precio="${pan.precio}">🛒</button>
-  </div>
-`;
+    card.innerHTML = `
+      <img src="${pan.imagen_url}" alt="${pan.nombre}" class="w-full h-32 object-cover rounded mb-4">
+      <h3 class="text-xl font-semibold">${pan.nombre}</h3>
+      <p class="text-sm text-gray-400 mt-1">${pan.ingredientes}</p>
+      <p class="text-sm text-yellow-400 mt-1">Stock disponible: ${pan.stock}</p>
+      <div class="flex justify-between items-center mt-4">
+        <span class="price">$${pan.precio}</span>
+        <button class="buy-button bg-blue-500 text-white px-3 py-1 rounded" 
+          data-nombre="${pan.nombre}" 
+          data-precio="${pan.precio}">🛒</button>
+      </div>
+    `;
     grid.appendChild(card);
   });
 
@@ -96,6 +97,7 @@ function deshabilitarAcciones() {
     pagarBtn.classList.add('opacity-50', 'cursor-not-allowed');
     pagarBtn.title = 'Inicia sesión para pagar';
   }
+
   if (!document.getElementById('login-warning')) {
     const mensaje = document.createElement('p');
     mensaje.id = 'login-warning';
@@ -104,7 +106,6 @@ function deshabilitarAcciones() {
     document.querySelector('.cart-section')?.appendChild(mensaje);
   }
 }
-
 
 document.addEventListener('click', async (e) => {
   const btn = e.target.closest('.buy-button');
@@ -159,31 +160,33 @@ tablaBody.addEventListener('change', async (e) => {
   }
 });
 
-if (pagarBtn) {
-  pagarBtn.addEventListener('click', async () => {
-    if (!sesionActiva) return;
-    try {
-      const res = await fetchJson('/carrito/compra', { method: 'POST' });
+pagarBtn?.addEventListener('click', async () => {
+  if (!sesionActiva) {
+    alert('Inicia sesión para pagar');
+    return;
+  }
+  try {
+    const res = await fetch('/carrito/compra', { method: 'POST' });
+    const data = await res.json();
 
-      if (res.ok) {
-        alert(res.mensaje || 'Compra registrada correctamente.');
-        await loadAndRenderCarrito();
-        await cargarCatalogo();
-      } else {
-        alert(res.error || 'Error al procesar la compra');
-      }
-    } catch {
-      alert('Error al procesar la compra');
+    if (data.ok) {
+      alert(data.mensaje || 'Compra realizada correctamente.');
+      document.getElementById('user-funds')?.textContent = `Fondos: $${data.nuevosFondos}`;
+      await loadAndRenderCarrito();
+      await cargarCatalogo();
+    } else {
+      alert(data.error || 'Error al procesar la compra');
     }
-  });
-}
-
-
+  } catch {
+    alert('Error al procesar la compra');
+  }
+});
 
 fetch('/estadoSesion')
   .then(res => res.json())
   .then(data => {
     sesionActiva = data.sesion;
+    correoUsuario = data.correo || null;
 
     const icon = document.getElementById('session-icon');
     const addFundsBtn = document.getElementById('add-funds-btn');
@@ -196,21 +199,23 @@ fetch('/estadoSesion')
       icon.innerHTML = `<button id="logout-button" class="text-xl bg-transparent border-none cursor-pointer" title="Cerrar sesión">🔓</button>`;
       document.getElementById('logout-button').addEventListener('click', cerrarSesion);
 
-      // Mostrar fondos actuales
       userFunds.textContent = `Fondos: $${data.fondos}`;
 
-      // Activar botones
       addFundsBtn.disabled = false;
       addFundsBtn.classList.remove('opacity-50', 'cursor-not-allowed');
       ticketsLink.classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
-      ticketsLink.href = "/tickets.html";
+      ticketsLink.href = "/historial.html";
 
-      // Mostrar formulario de fondos
+      if (pagarBtn) {
+        pagarBtn.disabled = false;
+        pagarBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        pagarBtn.title = '';
+      }
+
       addFundsBtn.addEventListener('click', () => {
         fundsForm.classList.toggle('hidden');
       });
 
-      // Enviar fondos
       formAddFunds.addEventListener('submit', async (e) => {
         e.preventDefault();
         const cantidad = e.target.cantidad.value;
@@ -226,7 +231,6 @@ fetch('/estadoSesion')
           if (result.ok) {
             alert('Fondos agregados correctamente.');
             fundsForm.classList.add('hidden');
-            // 🔄 Actualizar fondos en pantalla
             userFunds.textContent = `Fondos: $${result.nuevosFondos}`;
           } else {
             alert(result.error || 'Error al agregar fondos.');
@@ -236,38 +240,87 @@ fetch('/estadoSesion')
         }
       });
     } else {
+
       icon.innerHTML = `<a href="/login.html" title="Iniciar sesión">👤</a>`;
       userFunds.textContent = "";
+
       addFundsBtn.disabled = true;
       addFundsBtn.classList.add('opacity-50', 'cursor-not-allowed');
+
       ticketsLink.classList.add('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
       ticketsLink.href = "#";
-      fundsForm.classList.add('hidden');
-      deshabilitarAcciones();
-    }
 
-    function cerrarSesion() {
-      fetch('/cerrarSesion', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({ correo: data.correo })
-      })
-      .then(() => {
-        sesionActiva = false;
-        icon.innerHTML = `<a href="/login.html" title="Iniciar sesión">👤</a>`;
-        userFunds.textContent = "";
-        addFundsBtn.disabled = true;
-        addFundsBtn.classList.add('opacity-50', 'cursor-not-allowed');
-        ticketsLink.classList.add('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
-        ticketsLink.href = "#";
-        fundsForm.classList.add('hidden');
-        deshabilitarAcciones();
-      });
+      fundsForm.classList.add('hidden');
+
+      if (pagarBtn) {
+        pagarBtn.disabled = true;
+        pagarBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        pagarBtn.title = 'Inicia sesión para pagar';
+      }
+
+      deshabilitarAcciones();
     }
   });
 
-  async function cargarHistorial() {
+function cerrarSesion() {
+  const message = document.getElementById('session-message');
+
+  fetch('/cerrarSesion', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({ correo: correoUsuario || '' })
+  })
+  .then(() => {
+    sesionActiva = false;
+
+    const icon = document.getElementById('session-icon');
+    const addFundsBtn = document.getElementById('add-funds-btn');
+    const ticketsLink = document.getElementById('tickets-link');
+    const fundsForm = document.getElementById('funds-form');
+    const userFunds = document.getElementById('user-funds');
+
+    icon.innerHTML = `<a href="/login.html" title="Iniciar sesión">👤</a>`;
+    if (userFunds) userFunds.textContent = "";
+
+    if (addFundsBtn) {
+      addFundsBtn.disabled = true;
+      addFundsBtn.classList.add('opacity-50', 'cursor-not-allowed');
+    }
+
+    if (ticketsLink) {
+      ticketsLink.classList.add('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+      ticketsLink.href = "#";
+    }
+
+    if (fundsForm) fundsForm.classList.add('hidden');
+
+    if (pagarBtn) {
+      pagarBtn.disabled = true;
+      pagarBtn.classList.add('opacity-50', 'cursor-not-allowed');
+      pagarBtn.title = 'Inicia sesión para pagar';
+    }
+
+    deshabilitarAcciones();
+
+    if (message) {
+      message.textContent = "Sesión cerrada correctamente.";
+      setTimeout(() => { message.textContent = ""; }, 3000);
+    }
+
+    cargarCatalogo?.();
+    loadAndRenderCarrito?.();
+  })
+  .catch(() => {
+    if (message) {
+      message.textContent = "Error al cerrar sesión.";
+      setTimeout(() => { message.textContent = ""; }, 4000);
+    }
+  });
+}
+
+async function cargarHistorial() {
   const contenedor = document.getElementById('historial-container');
+  if (!contenedor) return;
   contenedor.innerHTML = '';
 
   try {
@@ -291,7 +344,6 @@ fetch('/estadoSesion')
         <p><strong>Fecha:</strong> ${new Date(compra.fecha).toLocaleString()}</p>
         <p class="text-sm text-gray-400">Venta #${compra.numero_venta}</p>
       `;
-
       contenedor.appendChild(tarjeta);
     });
   } catch {
@@ -302,9 +354,6 @@ fetch('/estadoSesion')
 if (window.location.pathname.includes('historial.html')) {
   cargarHistorial();
 }
-
-
-
 
 cargarCatalogo();
 loadAndRenderCarrito();

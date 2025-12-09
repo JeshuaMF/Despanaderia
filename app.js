@@ -35,25 +35,22 @@ app.post('/agregarPan', (req, res) => {
     !nombre ||
     !ingredientes ||
     !imagen_url ||
-    precioNum === undefined ||
-    isNaN(precioNum) ||
-    precioNum < 0 ||
-    stockNum === undefined ||
-    isNaN(stockNum) ||
-    stockNum < 0
+    isNaN(precioNum) || precioNum < 0 ||
+    isNaN(stockNum) || stockNum < 0
   ) {
-    return res.status(400).send("Todos los campos son obligatorios, el precio debe ser >= 0 y el stock >= 0.");
+    return res.json({ ok: false, error: "Todos los campos son obligatorios, el precio debe ser >= 0 y el stock >= 0." });
   }
 
   con.query(
     'INSERT INTO panes (nombre, precio, ingredientes, imagen_url, stock) VALUES (?, ?, ?, ?, ?)',
     [nombre, precioNum, ingredientes, imagen_url, stockNum],
     (err) => {
-      if (err) return res.status(500).send("Error al insertar el pan.");
-      res.send(`<h1>Pan agregado exitosamente!</h1><a href="/">Volver</a>`);
+      if (err) return res.json({ ok: false, error: "Error al insertar el pan." });
+      return res.json({ ok: true, mensaje: "Pan agregado exitosamente!" });
     }
   );
 });
+
 
 
 app.get('/obtenerPanes', (req, res) => {
@@ -405,9 +402,6 @@ app.post('/carrito/compra', (req, res) => {
     });
   });
 });
-
-
-
 
 app.put('/carrito/actualizar/:id', (req, res) => {
   const id = Number(req.params.id);
