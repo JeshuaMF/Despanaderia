@@ -363,9 +363,10 @@ app.post('/carrito/compra', (req, res) => {
       return res.status(400).json({ error: `Fondos insuficientes. Necesitas $${totalCompra}, tienes $${fondosActuales}` });
     }
 
+    const numeroVenta = Date.now();
+
     let erroresStock = [];
     let pendientes = carrito.length;
-    const numeroVenta = Date.now();
 
     carrito.forEach(item => {
       con.query('SELECT stock FROM panes WHERE nombre = ?', [item.nombre], (err, rows) => {
@@ -375,22 +376,34 @@ app.post('/carrito/compra', (req, res) => {
         }
 
         if (pendientes === 0) {
-          if (erroresStock.length > 0) return res.status(400).json({ error: erroresStock.join(', ') });
+          if (erroresStock.length > 0) {
+            return res.status(400).json({ error: erroresStock.join(', ') });
+          }
 
           con.query('UPDATE usuarios SET fondos = fondos - ? WHERE id = ?', [totalCompra, usuarioId]);
 
           carrito.forEach(item => {
-            con.query('INSERT INTO compras (usuario_id, nombre_pan, precio, cantidad, numero_venta) VALUES (?, ?, ?, ?, ?)',
-              [usuarioId, item.nombre, item.precio, item.cantidad, numeroVenta]);
+            con.query(
+              'INSERT INTO compras (usuario_id, nombre_pan, precio, cantidad, numero_venta) VALUES (?, ?, ?, ?, ?)',
+              [usuarioId, item.nombre, item.precio, item.cantidad, numeroVenta]
+            );
 
             con.query('UPDATE panes SET stock = stock - ? WHERE nombre = ?', [item.cantidad, item.nombre]);
           });
 
-          con.query('INSERT INTO tickets (numero_venta, usuario_id, total) VALUES (?, ?, ?)',
-            [numeroVenta, usuarioId, totalCompra]);
+          con.query(
+            'INSERT INTO tickets (numero_venta, usuario_id, total) VALUES (?, ?, ?)',
+            [numeroVenta, usuarioId, totalCompra]
+          );
 
           carrito.length = 0;
-          res.json({ ok: true, mensaje: `Compra realizada. Se descontaron $${totalCompra} de tus fondos.`, nuevosFondos: fondosActuales - totalCompra });
+
+          res.json({
+            ok: true,
+            mensaje: `Compra realizada. Se descontaron $${totalCompra} de tus fondos.`,
+            nuevosFondos: fondosActuales - totalCompra,
+            numeroVenta
+          });
         }
       });
     });

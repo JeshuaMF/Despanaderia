@@ -170,6 +170,7 @@ if (pagarBtn) {
 
       if (res.ok) {
         alert(res.mensaje || 'Compra registrada correctamente.');
+        document.getElementById('user-funds').textContent = `Fondos: $${res.nuevosFondos}`;
         await loadAndRenderCarrito();
         await cargarCatalogo();
       } else {
@@ -295,10 +296,42 @@ fetch('/estadoSesion')
   }
 }
 
+async function cargarHistorial() {
+  const contenedor = document.getElementById('historial-container');
+  contenedor.innerHTML = '';
+
+  try {
+    const res = await fetch('/comprasUsuario');
+    const compras = await res.json();
+
+    if (!Array.isArray(compras) || compras.length === 0) {
+      contenedor.innerHTML = '<p class="text-center text-gray-400">No hay compras registradas.</p>';
+      return;
+    }
+
+    compras.forEach(compra => {
+      const tarjeta = document.createElement('div');
+      tarjeta.className = 'bg-gray-800 p-4 rounded-lg shadow';
+
+      tarjeta.innerHTML = `
+        <h3 class="text-xl font-semibold mb-2">${compra.nombre_pan}</h3>
+        <p class="text-sm text-gray-400">Precio unitario: $${Number(compra.precio).toFixed(2)}</p>
+        <p class="text-sm text-gray-400">Cantidad: ${compra.cantidad}</p>
+        <p class="text-sm text-yellow-400 font-semibold">Total: $${(compra.precio * compra.cantidad).toFixed(2)}</p>
+        <p class="text-sm text-gray-400 mt-2">Fecha: ${new Date(compra.fecha).toLocaleString()}</p>
+        <p class="text-xs text-gray-500">Venta #${compra.numero_venta}</p>
+      `;
+
+      contenedor.appendChild(tarjeta);
+    });
+  } catch {
+    contenedor.innerHTML = '<p class="text-center text-red-400">Error al cargar el historial.</p>';
+  }
+}
+
 if (window.location.pathname.includes('historial.html')) {
   cargarHistorial();
 }
-
 
 cargarCatalogo();
 loadAndRenderCarrito();
