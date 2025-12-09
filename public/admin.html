@@ -41,37 +41,41 @@
       </div>
     </section>
 
-
     <section class="crud-section border-t border-gray-700 mt-12 pt-10">
-    <h2 style="color: white; font-size: 24px; margin-bottom: 16px;">Agregar Usuario Cliente</h2>
+  <h2 class="text-4xl font-bold text-center mb-10">Administración de Usuarios</h2>
+  <div class="crud-container mx-auto flex flex-col md:flex-row gap-8">
 
-    <form method="POST" action="/registrarUsuario">
-        <label style="color: white;">Nombre de usuario</label><br>
-        <input type="text" name="nombre" required
-        style="width: 100%; padding: 8px; margin-bottom: 12px; border-radius: 6px; background-color: #2c2c2c; color: white; border: 1px solid #555;"><br>
+    <div class="crud-form bg-gray-800 p-6 rounded-lg shadow flex-1">
+      <h3 class="text-xl font-semibold mb-4">Agregar Usuario Cliente</h3>
+      <form method="POST" action="/registrarUsuario" class="space-y-4">
+        <input type="text" name="nombre" placeholder="Nombre de usuario" required
+          class="w-full px-4 py-2 rounded bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
 
-        <label style="color: white;">Correo electrónico</label><br>
-        <input type="email" name="correo" required
-        style="width: 100%; padding: 8px; margin-bottom: 12px; border-radius: 6px; background-color: #2c2c2c; color: white; border: 1px solid #555;"><br>
+        <input type="email" name="correo" placeholder="Correo electrónico" required
+          class="w-full px-4 py-2 rounded bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
 
-        <label style="color: white;">Contraseña</label><br>
-        <input type="password" name="contraseña" required
-        style="width: 100%; padding: 8px; margin-bottom: 16px; border-radius: 6px; background-color: #2c2c2c; color: white; border: 1px solid #555;"><br>
+        <input type="password" name="contraseña" placeholder="Contraseña" required
+          class="w-full px-4 py-2 rounded bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
 
         <button type="submit"
-        style="background-color: #4cd1f3; color: #1a1a1a; font-weight: bold; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer;">
-        Guardar Usuario
+          class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded transition shadow">
+          Guardar Usuario
         </button>
-    </form>
-
-    <div class="crud-actions-card" style="margin-top: 20px;">
-        <h3 style="color: white; margin-bottom: 8px;">Gestión de Usuarios</h3>
-        <a href="/obtenerUsuarios" id="crudUsuariosBtn"
-        style="display: inline-block; background-color: #4cd1f3; color: #1a1a1a; font-weight: bold; padding: 10px 20px; border-radius: 6px; text-decoration: none;">
-        Ver/Editar/Borrar Usuarios
-        </a>
+      </form>
     </div>
-    </section>
+
+    <div class="crud-actions-card bg-gray-800 p-6 rounded-lg shadow flex-1">
+      <h3 class="text-xl font-semibold mb-4">Gestión de Usuarios</h3>
+      <a href="/obtenerUsuarios"
+        class="inline-block bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded transition shadow">
+        Ver/Editar/Borrar Usuarios
+      </a>
+    </div>
+
+  </div>
+</section>
+
+
     <section class="mt-12">
         <h2 class="text-2xl font-bold mb-4">Panes más vendidos</h2>
         <canvas id="graficoPanes" class="bg-gray-800 p-4 rounded-lg"></canvas>
