@@ -474,6 +474,23 @@ app.get('/comprasUsuario', (req, res) => {
   });
 });
 
+app.get('/estadisticas/panesMasVendidos', (req, res) => {
+  const query = `
+    SELECT nombre_pan, SUM(cantidad) AS total_vendidos
+    FROM compras
+    GROUP BY nombre_pan
+    ORDER BY total_vendidos DESC
+    LIMIT 10
+  `;
+  con.query(query, (err, resultado) => {
+    if (err) {
+      console.error('Error al obtener estadísticas:', err);
+      return res.status(500).json({ error: 'Error al obtener estadísticas' });
+    }
+    res.json(resultado);
+  });
+});
+
 app.get('/ticketsUsuario/:id', (req, res) => {
   const usuarioId = req.params.id;
 

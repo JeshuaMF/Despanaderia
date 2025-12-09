@@ -110,5 +110,39 @@ if (formPan) {
   });
 }
 
+async function cargarGraficoPanes() {
+  try {
+    const res = await fetch('/estadisticas/panesMasVendidos');
+    const data = await res.json();
+
+    const ctx = document.getElementById('graficoPanes').getContext('2d');
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: data.map(p => p.nombre_pan),
+        datasets: [{
+          label: 'Cantidad vendida',
+          data: data.map(p => p.total_vendidos),
+          backgroundColor: 'rgba(79, 70, 229, 0.7)', // azul
+          borderColor: 'rgba(79, 70, 229, 1)',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false },
+          title: { display: true, text: 'Top 10 panes más vendidos' }
+        }
+      }
+    });
+  } catch (err) {
+    console.error('Error al cargar gráfico:', err);
+  }
+}
+
+cargarGraficoPanes();
+
+
 cargarUsuarios();
 cargarPanes();
