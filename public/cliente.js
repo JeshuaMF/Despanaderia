@@ -1,10 +1,9 @@
 const tablaBody = document.querySelector('#tablaCarrito tbody');
 const totalEl = document.getElementById('total');
 const contadorEl = document.getElementById('contador');
-const pagarBtn = document.getElementById('pagar-btn'); // usa siempre este id
+const pagarBtn = document.getElementById('pagar-btn'); // corregido
 const grid = document.getElementById('product-grid');
 let sesionActiva = false;
-let correoUsuario = null;
 
 async function fetchJson(url, opts) {
   try {
@@ -107,59 +106,7 @@ function deshabilitarAcciones() {
   }
 }
 
-document.addEventListener('click', async (e) => {
-  const btn = e.target.closest('.buy-button');
-  if (!btn || !sesionActiva) return;
-
-  const nombre = btn.dataset.nombre;
-  const precio = Number(btn.dataset.precio);
-  const cantidad = 1;
-
-  try {
-    await fetchJson('/carrito/agregar', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nombre, precio, cantidad })
-    });
-    await loadAndRenderCarrito();
-  } catch {
-    alert('Error al agregar al carrito');
-  }
-});
-
-tablaBody.addEventListener('click', async (e) => {
-  const btn = e.target.closest('button[data-id]');
-  if (!btn || !sesionActiva) return;
-  const id = btn.dataset.id;
-
-  try {
-    await fetchJson(`/carrito/eliminar/${id}`, { method: 'DELETE' });
-    await loadAndRenderCarrito();
-  } catch {
-    alert('Error al eliminar del carrito');
-  }
-});
-
-tablaBody.addEventListener('change', async (e) => {
-  const input = e.target.closest('input.cantidad-input');
-  if (!input || !sesionActiva) return;
-
-  const id = input.dataset.id;
-  const nuevaCantidad = Number(input.value);
-  if (nuevaCantidad <= 0) return alert('Cantidad inválida');
-
-  try {
-    await fetchJson(`/carrito/actualizar/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ cantidad: nuevaCantidad })
-    });
-    await loadAndRenderCarrito();
-  } catch {
-    alert('Error al actualizar cantidad');
-  }
-});
-
+// Listener único para pagar
 pagarBtn?.addEventListener('click', async () => {
   if (!sesionActiva) {
     alert('Inicia sesión para pagar');
@@ -186,8 +133,6 @@ fetch('/estadoSesion')
   .then(res => res.json())
   .then(data => {
     sesionActiva = data.sesion;
-    correoUsuario = data.correo || null;
-
     const icon = document.getElementById('session-icon');
     const addFundsBtn = document.getElementById('add-funds-btn');
     const ticketsLink = document.getElementById('tickets-link');
@@ -200,17 +145,14 @@ fetch('/estadoSesion')
       document.getElementById('logout-button').addEventListener('click', cerrarSesion);
 
       userFunds.textContent = `Fondos: $${data.fondos}`;
-
       addFundsBtn.disabled = false;
       addFundsBtn.classList.remove('opacity-50', 'cursor-not-allowed');
       ticketsLink.classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
       ticketsLink.href = "/historial.html";
 
-      if (pagarBtn) {
-        pagarBtn.disabled = false;
-        pagarBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-        pagarBtn.title = '';
-      }
+      pagarBtn.disabled = false;
+      pagarBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+      pagarBtn.title = '';
 
       addFundsBtn.addEventListener('click', () => {
         fundsForm.classList.toggle('hidden');
@@ -240,120 +182,21 @@ fetch('/estadoSesion')
         }
       });
     } else {
-
       icon.innerHTML = `<a href="/login.html" title="Iniciar sesión">👤</a>`;
       userFunds.textContent = "";
-
       addFundsBtn.disabled = true;
       addFundsBtn.classList.add('opacity-50', 'cursor-not-allowed');
-
       ticketsLink.classList.add('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
       ticketsLink.href = "#";
-
       fundsForm.classList.add('hidden');
 
-      if (pagarBtn) {
-        pagarBtn.disabled = true;
-        pagarBtn.classList.add('opacity-50', 'cursor-not-allowed');
-        pagarBtn.title = 'Inicia sesión para pagar';
-      }
+      pagarBtn.disabled = true;
+      pagarBtn.classList.add('opacity-50', 'cursor-not-allowed');
+      pagarBtn.title = 'Inicia sesión para pagar';
 
       deshabilitarAcciones();
     }
   });
-
-function cerrarSesion() {
-  const message = document.getElementById('session-message');
-
-  fetch('/cerrarSesion', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({ correo: correoUsuario || '' })
-  })
-  .then(() => {
-    sesionActiva = false;
-
-    const icon = document.getElementById('session-icon');
-    const addFundsBtn = document.getElementById('add-funds-btn');
-    const ticketsLink = document.getElementById('tickets-link');
-    const fundsForm = document.getElementById('funds-form');
-    const userFunds = document.getElementById('user-funds');
-
-    icon.innerHTML = `<a href="/login.html" title="Iniciar sesión">👤</a>`;
-    if (userFunds) userFunds.textContent = "";
-
-    if (addFundsBtn) {
-      addFundsBtn.disabled = true;
-      addFundsBtn.classList.add('opacity-50', 'cursor-not-allowed');
-    }
-
-    if (ticketsLink) {
-      ticketsLink.classList.add('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
-      ticketsLink.href = "#";
-    }
-
-    if (fundsForm) fundsForm.classList.add('hidden');
-
-    if (pagarBtn) {
-      pagarBtn.disabled = true;
-      pagarBtn.classList.add('opacity-50', 'cursor-not-allowed');
-      pagarBtn.title = 'Inicia sesión para pagar';
-    }
-
-    deshabilitarAcciones();
-
-    if (message) {
-      message.textContent = "Sesión cerrada correctamente.";
-      setTimeout(() => { message.textContent = ""; }, 3000);
-    }
-
-    cargarCatalogo();
-    loadAndRenderCarrito();
-  })
-  .catch(() => {
-    if (message) {
-      message.textContent = "Error al cerrar sesión.";
-      setTimeout(() => { message.textContent = ""; }, 4000);
-    }
-  });
-}
-
-async function cargarHistorial() {
-  const contenedor = document.getElementById('historial-container');
-  if (!contenedor) return;
-  contenedor.innerHTML = '';
-
-  try {
-    const res = await fetch('/comprasUsuario');
-    const compras = await res.json();
-
-    if (!Array.isArray(compras) || compras.length === 0) {
-      contenedor.innerHTML = '<p class="text-center text-gray-400">No hay compras registradas.</p>';
-      return;
-    }
-
-    compras.forEach(compra => {
-      const tarjeta = document.createElement('div');
-      tarjeta.className = 'bg-gray-800 p-4 rounded shadow';
-
-      tarjeta.innerHTML = `
-        <h3 class="text-lg font-bold mb-2">${compra.nombre_pan}</h3>
-        <p><strong>Precio:</strong> $${compra.precio}</p>
-        <p><strong>Cantidad:</strong> ${compra.cantidad}</p>
-        <p><strong>Total:</strong> $${(compra.precio * compra.cantidad).toFixed(2)}</p>
-        <p><strong>Fecha:</strong> ${new Date(compra.fecha).toLocaleString()}</p>
-        <p class="text-sm text-gray-400">Venta #${compra.numero_venta}</p>
-      `;
-      contenedor.appendChild(tarjeta);
-    });
-  } catch {
-    contenedor.innerHTML = '<p class="text-center text-red-400">Error al cargar el historial.</p>';
-  }
-}
-
-if (window.location.pathname.includes('historial.html')) {
-  cargarHistorial();
-}
 
 cargarCatalogo();
 loadAndRenderCarrito();
