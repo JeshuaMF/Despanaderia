@@ -93,9 +93,9 @@ function deshabilitarAcciones() {
   });
 
   if (pagarBtn) {
-    pagarBtn.disabled = ffalse;
-    pagarBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-    pagarBtn.title = '';
+    pagarBtn.disabled = true;
+    pagarBtn.classList.add('opacity-50', 'cursor-not-allowed');
+    pagarBtn.title = 'Inicia sesión para pagar';
   }
 
   if (!document.getElementById('login-warning')) {
