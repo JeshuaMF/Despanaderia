@@ -362,12 +362,10 @@ app.delete('/carrito/eliminar/:id', (req, res) => {
 
 app.post('/carrito/compra', (req, res) => {
   con.query('SELECT id, fondos FROM usuarios WHERE sesion_iniciada = 1 LIMIT 1', (err, resultado) => {
-    if (err || resultado.length === 0) {
-      return res.status(403).json({ error: 'No hay sesión activa' });
-    }
+    if (err || resultado.length === 0) return res.status(403).json({ error: 'No hay sesión activa' });
+
     const usuarioId = resultado[0].id;
     let fondosActuales = resultado[0].fondos;
-
     let totalCompra = carrito.reduce((acc, item) => acc + (item.precio * item.cantidad), 0);
 
     if (fondosActuales < totalCompra) {
@@ -376,44 +374,38 @@ app.post('/carrito/compra', (req, res) => {
 
     let erroresStock = [];
     let pendientes = carrito.length;
+    const numeroVenta = Date.now();
+
     carrito.forEach(item => {
       con.query('SELECT stock FROM panes WHERE nombre = ?', [item.nombre], (err, rows) => {
         pendientes--;
-        if (err || rows.length === 0) {
-          erroresStock.push(`El producto ${item.nombre} no existe.`);
-        } else {
-          const stockActual = rows[0].stock;
-          if (stockActual < item.cantidad) {
-            erroresStock.push(`Stock insuficiente para ${item.nombre}. Disponible: ${stockActual}`);
-          }
+        if (err || rows.length === 0 || rows[0].stock < item.cantidad) {
+          erroresStock.push(`Stock insuficiente para ${item.nombre}`);
         }
 
         if (pendientes === 0) {
-          if (erroresStock.length > 0) {
-            return res.status(400).json({ error: erroresStock.join(', ') });
-          }
+          if (erroresStock.length > 0) return res.status(400).json({ error: erroresStock.join(', ') });
 
           con.query('UPDATE usuarios SET fondos = fondos - ? WHERE id = ?', [totalCompra, usuarioId]);
 
           carrito.forEach(item => {
-            con.query(
-              'INSERT INTO compras (usuario_id, nombre_pan, precio, cantidad, numero_venta) VALUES (?, ?, ?, ?, ?)',
-              [usuarioId, item.nombre, item.precio, item.cantidad, Date.now()]
-            );
+            con.query('INSERT INTO compras (usuario_id, nombre_pan, precio, cantidad, numero_venta) VALUES (?, ?, ?, ?, ?)',
+              [usuarioId, item.nombre, item.precio, item.cantidad, numeroVenta]);
 
-            con.query(
-              'UPDATE panes SET stock = stock - ? WHERE nombre = ?',
-              [item.cantidad, item.nombre]
-            );
+            con.query('UPDATE panes SET stock = stock - ? WHERE nombre = ?', [item.cantidad, item.nombre]);
           });
 
+          con.query('INSERT INTO tickets (numero_venta, usuario_id, total) VALUES (?, ?, ?)',
+            [numeroVenta, usuarioId, totalCompra]);
+
           carrito.length = 0;
-          return res.json({ ok: true, mensaje: `Compra realizada. Se descontaron $${totalCompra} de tus fondos.` });
+          res.json({ ok: true, mensaje: `Compra realizada. Se descontaron $${totalCompra} de tus fondos.`, nuevosFondos: fondosActuales - totalCompra });
         }
       });
     });
   });
 });
+
 
 
 
@@ -453,6 +445,19 @@ app.post('/agregarFondos', (req, res) => {
     res.json({ ok: true });
   });
 });
+
+app.get('/comprasUsuario', (req, res) => {
+  con.query('SELECT id FROM usuarios WHERE sesion_iniciada = 1 LIMIT 1', (err, resultado) => {
+    if (err || resultado.length === 0) return res.json([]);
+    const usuarioId = resultado[0].id;
+
+    con.query('SELECT * FROM compras WHERE usuario_id = ? ORDER BY fecha DESC', [usuarioId], (err, compras) => {
+      if (err) return res.json([]);
+      res.json(compras);
+    });
+  });
+});
+
 
 app.listen(process.env.PORT || 10000, () => {
     console.log(`Servidor escuchando en el puerto ${process.env.PORT || 10000}`);
