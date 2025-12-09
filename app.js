@@ -293,7 +293,7 @@ app.post('/registrarUsuario', (req, res) => {
     });
 });
 
-aapp.post('/iniciarSesion', (req, res) => {
+app.post('/iniciarSesion', (req, res) => {
   const { nombre, contraseña } = req.body;
 
   con.query('SELECT * FROM usuarios WHERE nombre = ? AND contraseña = ?', [nombre, contraseña], (err, resultado) => {
@@ -426,6 +426,8 @@ app.put('/carrito/actualizar/:id', (req, res) => {
   res.json({ ok: true });
 });
 
+
+
 app.get('/test-db', (req, res) => {
   con.query('SELECT 1 + 1 AS resultado', (err, resultado) => {
     if (err) return res.status(500).send("Error de conexión con la base");
@@ -433,7 +435,21 @@ app.get('/test-db', (req, res) => {
   });
 });
 
+//Agregar fondos mediante el form del index
+app.post('/agregarFondos', (req, res) => {
+  const { correo, cantidad } = req.body;
+  const monto = Number(cantidad);
 
+  if (!correo || isNaN(monto) || monto <= 0) {
+    return res.json({ ok: false, error: 'Cantidad inválida' });
+  }
+
+  con.query('UPDATE usuarios SET fondos = fondos + ? WHERE correo = ?', [monto, correo], (err, resultado) => {
+    if (err) return res.json({ ok: false, error: 'Error al actualizar fondos' });
+    if (resultado.affectedRows === 0) return res.json({ ok: false, error: 'Usuario no encontrado' });
+    res.json({ ok: true });
+  });
+});
 app.listen(process.env.PORT || 10000, () => {
     console.log(`Servidor escuchando en el puerto ${process.env.PORT || 10000}`);
 });
