@@ -451,11 +451,8 @@ app.get('/comprasUsuario', (req, res) => {
       return res.json([]);
     }
 
-    console.log('Usuario activo:', usuarioId);
-    console.log('Compras encontradas:', compras);
-
-
     const usuarioId = resultado[0].id;
+    console.log('Usuario activo:', usuarioId);
 
     con.query('SELECT * FROM compras WHERE usuario_id = ?', [usuarioId], (err, compras) => {
       if (err) {
@@ -463,10 +460,13 @@ app.get('/comprasUsuario', (req, res) => {
         return res.json([]);
       }
 
+      console.log('Compras encontradas:', compras);
       res.json(compras);
     });
   });
 });
+
+
 
 app.listen(process.env.PORT || 10000, () => {
     console.log(`Servidor escuchando en el puerto ${process.env.PORT || 10000}`);
