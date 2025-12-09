@@ -438,7 +438,6 @@ app.get('/test-db', (req, res) => {
   });
 });
 
-//Agregar fondos mediante el form del index
 app.post('/agregarFondos', (req, res) => {
   const { correo, cantidad } = req.body;
   const monto = Number(cantidad);
@@ -453,6 +452,7 @@ app.post('/agregarFondos', (req, res) => {
     res.json({ ok: true });
   });
 });
+
 app.listen(process.env.PORT || 10000, () => {
     console.log(`Servidor escuchando en el puerto ${process.env.PORT || 10000}`);
 });

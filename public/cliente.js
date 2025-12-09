@@ -96,7 +96,6 @@ function deshabilitarAcciones() {
     pagarBtn.classList.add('opacity-50', 'cursor-not-allowed');
     pagarBtn.title = 'Inicia sesión para pagar';
   }
-s
   if (!document.getElementById('login-warning')) {
     const mensaje = document.createElement('p');
     mensaje.id = 'login-warning';
