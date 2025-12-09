@@ -27,19 +27,19 @@ async function cargarCatalogo() {
     card.className = 'product-card bg-gray-800 p-4 rounded-lg shadow';
 
     card.innerHTML = `
-      <img src="${pan.imagen_url}" alt="${pan.nombre}" class="w-full h-32 object-cover rounded mb-4">
-      <h3 class="text-xl font-semibold">${pan.nombre}</h3>
-      <p class="text-sm text-gray-400 mt-1">${pan.ingredientes}</p>
-      <p class="text-sm text-yellow-400 mt-1">Stock disponible: ${pan.stock}</p>
-      <div class="flex justify-between items-center mt-4">
-        <span class="price">$${pan.precio}</span>
-        ${sesionActiva ? `
+  <img src="${pan.imagen_url}" ...>
+  <h3>${pan.nombre}</h3>
+  <p>${pan.ingredientes}</p>
+  <p>Stock disponible: ${pan.stock}</p>
+  <div class="flex justify-between items-center mt-4">
+    <span class="price">$${pan.precio}</span>
+    ${sesionActiva ? `
       <button class="buy-button bg-blue-500 text-white px-3 py-1 rounded" 
-    data-nombre="${pan.nombre}" 
-    data-precio="${pan.precio}">🛒</button>
-` : ''}
-
-    `;
+        data-nombre="${pan.nombre}" 
+        data-precio="${pan.precio}">🛒</button>
+    ` : ''}
+  </div>
+`;
     grid.appendChild(card);
   });
 
@@ -287,9 +287,11 @@ fetch('/estadoSesion')
         deshabilitarAcciones();
       });
     }
+    if (grid) cargarCatalogo();
+    if (tablaBody) loadAndRenderCarrito();
   });
 
-async function cargarHistorial() {
+  async function cargarHistorial() {
   const contenedor = document.getElementById('historial-container');
   if (!contenedor) return;
   contenedor.innerHTML = '';
@@ -326,6 +328,3 @@ async function cargarHistorial() {
 if (window.location.pathname.includes('historial.html')) {
   cargarHistorial();
 }
-if (grid) cargarCatalogo();
-if (tablaBody) loadAndRenderCarrito();
-
