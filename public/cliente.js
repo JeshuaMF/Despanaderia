@@ -305,6 +305,7 @@ async function cargarHistorial() {
   try {
     const res = await fetch('/comprasUsuario');
     const compras = await res.json();
+    console.log('Historial recibido:', compras); // 👈 revisa esto
 
     if (!Array.isArray(compras) || compras.length === 0) {
       contenedor.innerHTML = '<p class="text-center text-gray-400">No hay compras registradas.</p>';
@@ -330,6 +331,7 @@ async function cargarHistorial() {
     contenedor.innerHTML = '<p class="text-center text-red-400">Error al cargar el historial.</p>';
   }
 }
+
 
 if (window.location.pathname.includes('historial.html')) {
   cargarHistorial();

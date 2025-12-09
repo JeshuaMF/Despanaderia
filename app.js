@@ -446,15 +446,24 @@ app.post('/agregarFondos', (req, res) => {
 
 app.get('/comprasUsuario', (req, res) => {
   con.query('SELECT id FROM usuarios WHERE sesion_iniciada = 1 LIMIT 1', (err, resultado) => {
-    if (err || resultado.length === 0) return res.json([]);
+    if (err || resultado.length === 0) {
+      console.error('No hay sesión activa o error en usuarios:', err);
+      return res.json([]);
+    }
+
     const usuarioId = resultado[0].id;
 
-    con.query('SELECT * FROM compras WHERE usuario_id = ? ORDER BY fecha DESC', [usuarioId], (err, compras) => {
-      if (err) return res.json([]);
+    con.query('SELECT * FROM compras WHERE usuario_id = ?', [usuarioId], (err, compras) => {
+      if (err) {
+        console.error('Error al obtener compras:', err);
+        return res.json([]);
+      }
+
       res.json(compras);
     });
   });
 });
+
 app.listen(process.env.PORT || 10000, () => {
     console.log(`Servidor escuchando en el puerto ${process.env.PORT || 10000}`);
 });
