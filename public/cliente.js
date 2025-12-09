@@ -196,8 +196,10 @@ fetch('/estadoSesion')
 
     if (sesionActiva) {
       icon.innerHTML = `<button id="logout-button" class="text-xl bg-transparent border-none cursor-pointer" title="Cerrar sesión">🔓</button>`;
-      document.getElementById('logout-button').addEventListener('click', cerrarSesion);
-
+      const logoutBtn = document.getElementById('logout-button');
+      if (logoutBtn) {
+        logoutBtn.addEventListener('click', cerrarSesion);
+      }
       userFunds.textContent = `Fondos: $${data.fondos}`;
 
       addFundsBtn.disabled = false;
