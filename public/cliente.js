@@ -1,7 +1,7 @@
 const tablaBody = document.querySelector('#tablaCarrito tbody');
 const totalEl = document.getElementById('total');
 const contadorEl = document.getElementById('contador');
-const pagarBtn = document.getElementById('pagar-btn'); // corregido
+const pagarBtn = document.getElementById('pagarBtn');
 const grid = document.getElementById('product-grid');
 let sesionActiva = false;
 
@@ -24,18 +24,18 @@ async function cargarCatalogo() {
     const card = document.createElement('div');
     card.className = 'product-card bg-gray-800 p-4 rounded-lg shadow';
 
-    card.innerHTML = `
-      <img src="${pan.imagen_url}" alt="${pan.nombre}" class="w-full h-32 object-cover rounded mb-4">
-      <h3 class="text-xl font-semibold">${pan.nombre}</h3>
-      <p class="text-sm text-gray-400 mt-1">${pan.ingredientes}</p>
-      <p class="text-sm text-yellow-400 mt-1">Stock disponible: ${pan.stock}</p>
-      <div class="flex justify-between items-center mt-4">
-        <span class="price">$${pan.precio}</span>
-        <button class="buy-button bg-blue-500 text-white px-3 py-1 rounded" 
-          data-nombre="${pan.nombre}" 
-          data-precio="${pan.precio}">🛒</button>
-      </div>
-    `;
+   card.innerHTML = `
+  <img src="${pan.imagen_url}" alt="${pan.nombre}" class="w-full h-32 object-cover rounded mb-4">
+  <h3 class="text-xl font-semibold">${pan.nombre}</h3>
+  <p class="text-sm text-gray-400 mt-1">${pan.ingredientes}</p>
+  <p class="text-sm text-yellow-400 mt-1">Stock disponible: ${pan.stock}</p>
+  <div class="flex justify-between items-center mt-4">
+    <span class="price">Rs. ${pan.precio}/-</span>
+    <button class="buy-button bg-blue-500 text-white px-3 py-1 rounded" 
+      data-nombre="${pan.nombre}" 
+      data-precio="${pan.precio}">🛒</button>
+  </div>
+`;
     grid.appendChild(card);
   });
 
@@ -96,7 +96,6 @@ function deshabilitarAcciones() {
     pagarBtn.classList.add('opacity-50', 'cursor-not-allowed');
     pagarBtn.title = 'Inicia sesión para pagar';
   }
-
   if (!document.getElementById('login-warning')) {
     const mensaje = document.createElement('p');
     mensaje.id = 'login-warning';
@@ -106,53 +105,110 @@ function deshabilitarAcciones() {
   }
 }
 
-// Listener único para pagar
-pagarBtn?.addEventListener('click', async () => {
-  if (!sesionActiva) {
-    alert('Inicia sesión para pagar');
-    return;
-  }
-  try {
-    const res = await fetch('/carrito/compra', { method: 'POST' });
-    const data = await res.json();
 
-    if (data.ok) {
-      alert(data.mensaje || 'Compra realizada correctamente.');
-      document.getElementById('user-funds')?.textContent = `Fondos: $${data.nuevosFondos}`;
-      await loadAndRenderCarrito();
-      await cargarCatalogo();
-    } else {
-      alert(data.error || 'Error al procesar la compra');
-    }
+document.addEventListener('click', async (e) => {
+  const btn = e.target.closest('.buy-button');
+  if (!btn || !sesionActiva) return;
+
+  const nombre = btn.dataset.nombre;
+  const precio = Number(btn.dataset.precio);
+  const cantidad = 1;
+
+  try {
+    await fetchJson('/carrito/agregar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nombre, precio, cantidad })
+    });
+    await loadAndRenderCarrito();
   } catch {
-    alert('Error al procesar la compra');
+    alert('Error al agregar al carrito');
   }
 });
+
+tablaBody.addEventListener('click', async (e) => {
+  const btn = e.target.closest('button[data-id]');
+  if (!btn || !sesionActiva) return;
+  const id = btn.dataset.id;
+
+  try {
+    await fetchJson(`/carrito/eliminar/${id}`, { method: 'DELETE' });
+    await loadAndRenderCarrito();
+  } catch {
+    alert('Error al eliminar del carrito');
+  }
+});
+
+tablaBody.addEventListener('change', async (e) => {
+  const input = e.target.closest('input.cantidad-input');
+  if (!input || !sesionActiva) return;
+
+  const id = input.dataset.id;
+  const nuevaCantidad = Number(input.value);
+  if (nuevaCantidad <= 0) return alert('Cantidad inválida');
+
+  try {
+    await fetchJson(`/carrito/actualizar/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ cantidad: nuevaCantidad })
+    });
+    await loadAndRenderCarrito();
+  } catch {
+    alert('Error al actualizar cantidad');
+  }
+});
+
+if (pagarBtn) {
+  pagarBtn.addEventListener('click', async () => {
+    if (!sesionActiva) return;
+    try {
+      const res = await fetchJson('/carrito/compra', { method: 'POST' });
+
+      if (res.ok) {
+        alert(res.mensaje || 'Compra registrada correctamente.');
+        await loadAndRenderCarrito();
+        await cargarCatalogo();
+      } else {
+        alert(res.error || 'Error al procesar la compra');
+      }
+    } catch {
+      alert('Error al procesar la compra');
+    }
+  });
+}
+
+
 
 fetch('/estadoSesion')
   .then(res => res.json())
   .then(data => {
     sesionActiva = data.sesion;
+
     const icon = document.getElementById('session-icon');
     const addFundsBtn = document.getElementById('add-funds-btn');
     const ticketsLink = document.getElementById('tickets-link');
     const fundsForm = document.getElementById('funds-form');
     const formAddFunds = document.getElementById('form-add-funds');
     const userFunds = document.getElementById('user-funds');
+    const pagarBtn = document.getElementById('pagar-btn');
 
     if (sesionActiva) {
       icon.innerHTML = `<button id="logout-button" class="text-xl bg-transparent border-none cursor-pointer" title="Cerrar sesión">🔓</button>`;
       document.getElementById('logout-button').addEventListener('click', cerrarSesion);
 
       userFunds.textContent = `Fondos: $${data.fondos}`;
+
       addFundsBtn.disabled = false;
       addFundsBtn.classList.remove('opacity-50', 'cursor-not-allowed');
       ticketsLink.classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
       ticketsLink.href = "/historial.html";
 
-      pagarBtn.disabled = false;
-      pagarBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-      pagarBtn.title = '';
+      if (pagarBtn) {
+        pagarBtn.disabled = false;
+        pagarBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        pagarBtn.title = '';
+      }
 
       addFundsBtn.addEventListener('click', () => {
         fundsForm.classList.toggle('hidden');
@@ -184,19 +240,81 @@ fetch('/estadoSesion')
     } else {
       icon.innerHTML = `<a href="/login.html" title="Iniciar sesión">👤</a>`;
       userFunds.textContent = "";
+
       addFundsBtn.disabled = true;
       addFundsBtn.classList.add('opacity-50', 'cursor-not-allowed');
       ticketsLink.classList.add('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
       ticketsLink.href = "#";
       fundsForm.classList.add('hidden');
 
-      pagarBtn.disabled = true;
-      pagarBtn.classList.add('opacity-50', 'cursor-not-allowed');
-      pagarBtn.title = 'Inicia sesión para pagar';
+      if (pagarBtn) {
+        pagarBtn.disabled = true;
+        pagarBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        pagarBtn.title = 'Inicia sesión para pagar';
+      }
 
       deshabilitarAcciones();
     }
   });
+
+  async function cargarHistorial() {
+  const contenedor = document.getElementById('historial-container');
+  contenedor.innerHTML = '';
+
+  try {
+    const res = await fetch('/comprasUsuario');
+    const compras = await res.json();
+
+    if (!Array.isArray(compras) || compras.length === 0) {
+      contenedor.innerHTML = '<p class="text-center text-gray-400">No hay compras registradas.</p>';
+      return;
+    }
+
+    compras.forEach(compra => {
+      const tarjeta = document.createElement('div');
+      tarjeta.className = 'bg-gray-800 p-4 rounded shadow';
+
+      tarjeta.innerHTML = `
+        <h3 class="text-lg font-bold mb-2">${compra.nombre_pan}</h3>
+        <p><strong>Precio:</strong> $${compra.precio}</p>
+        <p><strong>Cantidad:</strong> ${compra.cantidad}</p>
+        <p><strong>Total:</strong> $${(compra.precio * compra.cantidad).toFixed(2)}</p>
+        <p><strong>Fecha:</strong> ${new Date(compra.fecha).toLocaleString()}</p>
+        <p class="text-sm text-gray-400">Venta #${compra.numero_venta}</p>
+      `;
+
+      contenedor.appendChild(tarjeta);
+    });
+  } catch {
+    contenedor.innerHTML = '<p class="text-center text-red-400">Error al cargar el historial.</p>';
+  }
+}
+
+if (window.location.pathname.includes('historial.html')) {
+  cargarHistorial();
+}
+
+document.getElementById('pagar-btn')?.addEventListener('click', async () => {
+  if (!sesionActiva) {
+    alert('Inicia sesión para pagar');
+    return;
+  }
+
+  try {
+    const res = await fetch('/carrito/compra', { method: 'POST' });
+    const data = await res.json();
+
+    if (data.ok) {
+      alert(data.mensaje || 'Compra realizada correctamente.');
+      document.getElementById('user-funds')?.textContent = `Fondos: $${data.nuevosFondos}`;
+      await loadAndRenderCarrito?.(); // refresca carrito
+    } else {
+      alert(data.error || 'Error al procesar la compra');
+    }
+  } catch {
+    alert('Error al procesar la compra');
+  }
+});
 
 cargarCatalogo();
 loadAndRenderCarrito();
