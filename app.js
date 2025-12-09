@@ -318,7 +318,7 @@ app.post('/cerrarSesion', (req, res) => {
     const { correo } = req.body;
     con.query('UPDATE usuarios SET sesion_iniciada = 0 WHERE correo = ?', [correo], (err) => {
         if (err) return res.send("Error al cerrar sesión");
-        res.redirect('/');
+        res.json({ ok: true, mensaje: "Sesión cerrada correctamente" });
     });
 });
 app.get('/estadoSesion', (req, res) => {
@@ -406,9 +406,6 @@ app.post('/carrito/compra', (req, res) => {
   });
 });
 
-
-
-
 app.put('/carrito/actualizar/:id', (req, res) => {
   const id = Number(req.params.id);
   const { cantidad } = req.body;
@@ -421,8 +418,6 @@ app.put('/carrito/actualizar/:id', (req, res) => {
   item.cantidad = cantidad;
   res.json({ ok: true });
 });
-
-
 
 app.get('/test-db', (req, res) => {
   con.query('SELECT 1 + 1 AS resultado', (err, resultado) => {
@@ -439,11 +434,10 @@ app.post('/agregarFondos', (req, res) => {
     return res.json({ ok: false, error: 'Cantidad inválida' });
   }
 
-  con.query('UPDATE usuarios SET fondos = fondos + ? WHERE correo = ?', [monto, correo], (err, resultado) => {
-    if (err) return res.json({ ok: false, error: 'Error al actualizar fondos' });
-    if (resultado.affectedRows === 0) return res.json({ ok: false, error: 'Usuario no encontrado' });
-    res.json({ ok: true });
-  });
+    con.query('SELECT fondos FROM usuarios WHERE correo = ?', [correo], (err2, rows) => {
+    if (err2 || !rows.length) return res.json({ ok: false, error: 'No se pudo obtener fondos' });
+    res.json({ ok: true, nuevosFondos: rows[0].fondos });
+    });
 });
 
 app.get('/comprasUsuario', (req, res) => {
@@ -457,8 +451,6 @@ app.get('/comprasUsuario', (req, res) => {
     });
   });
 });
-
-
 app.listen(process.env.PORT || 10000, () => {
     console.log(`Servidor escuchando en el puerto ${process.env.PORT || 10000}`);
 });

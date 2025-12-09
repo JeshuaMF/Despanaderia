@@ -30,7 +30,7 @@ async function cargarCatalogo() {
   <p class="text-sm text-gray-400 mt-1">${pan.ingredientes}</p>
   <p class="text-sm text-yellow-400 mt-1">Stock disponible: ${pan.stock}</p>
   <div class="flex justify-between items-center mt-4">
-    <span class="price">Rs. ${pan.precio}/-</span>
+    <span class="price">$${pan.precio}</span>
     <button class="buy-button bg-blue-500 text-white px-3 py-1 rounded" 
       data-nombre="${pan.nombre}" 
       data-precio="${pan.precio}">🛒</button>
@@ -92,10 +92,10 @@ function deshabilitarAcciones() {
   });
 
   if (pagarBtn) {
-    pagarBtn.disabled = true;
-    pagarBtn.classList.add('opacity-50', 'cursor-not-allowed');
-    pagarBtn.title = 'Inicia sesión para pagar';
-  }
+  pagarBtn.disabled = false;
+  pagarBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+  pagarBtn.title = '';
+}
   if (!document.getElementById('login-warning')) {
     const mensaje = document.createElement('p');
     mensaje.id = 'login-warning';
@@ -161,7 +161,10 @@ tablaBody.addEventListener('change', async (e) => {
 
 if (pagarBtn) {
   pagarBtn.addEventListener('click', async () => {
-    if (!sesionActiva) return;
+    if (!sesionActiva) {
+    alert('Inicia sesión para pagar');
+    return;
+  }
     try {
       const res = await fetchJson('/carrito/compra', { method: 'POST' });
 
@@ -177,8 +180,6 @@ if (pagarBtn) {
     }
   });
 }
-
-
 
 fetch('/estadoSesion')
   .then(res => res.json())
@@ -196,21 +197,17 @@ fetch('/estadoSesion')
       icon.innerHTML = `<button id="logout-button" class="text-xl bg-transparent border-none cursor-pointer" title="Cerrar sesión">🔓</button>`;
       document.getElementById('logout-button').addEventListener('click', cerrarSesion);
 
-      // Mostrar fondos actuales
       userFunds.textContent = `Fondos: $${data.fondos}`;
 
-      // Activar botones
       addFundsBtn.disabled = false;
       addFundsBtn.classList.remove('opacity-50', 'cursor-not-allowed');
       ticketsLink.classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
-      ticketsLink.href = "/tickets.html";
+      ticketsLink.href = "/historial.html";
 
-      // Mostrar formulario de fondos
       addFundsBtn.addEventListener('click', () => {
         fundsForm.classList.toggle('hidden');
       });
 
-      // Enviar fondos
       formAddFunds.addEventListener('submit', async (e) => {
         e.preventDefault();
         const cantidad = e.target.cantidad.value;
@@ -226,7 +223,6 @@ fetch('/estadoSesion')
           if (result.ok) {
             alert('Fondos agregados correctamente.');
             fundsForm.classList.add('hidden');
-            // 🔄 Actualizar fondos en pantalla
             userFunds.textContent = `Fondos: $${result.nuevosFondos}`;
           } else {
             alert(result.error || 'Error al agregar fondos.');
@@ -302,8 +298,6 @@ fetch('/estadoSesion')
 if (window.location.pathname.includes('historial.html')) {
   cargarHistorial();
 }
-
-
 
 
 cargarCatalogo();
