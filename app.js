@@ -257,6 +257,7 @@ app.get('/estadoSesion', (req, res) => {
   });
 });
 
+
 const carrito = [];
 
 app.get('/carrito', (req, res) => {
