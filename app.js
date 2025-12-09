@@ -31,29 +31,20 @@ app.post('/agregarPan', (req, res) => {
   const precioNum = Number(precio);
   const stockNum = Number(stock);
 
-  if (
-    !nombre ||
-    !ingredientes ||
-    !imagen_url ||
-    precioNum === undefined ||
-    isNaN(precioNum) ||
-    precioNum < 0 ||
-    stockNum === undefined ||
-    isNaN(stockNum) ||
-    stockNum < 0
-  ) {
-    return res.status(400).send("Todos los campos son obligatorios, el precio debe ser >= 0 y el stock >= 0.");
+  if (!nombre || !ingredientes || !imagen_url || isNaN(precioNum) || precioNum < 0 || isNaN(stockNum) || stockNum < 0) {
+    return res.json({ ok: false, error: "Todos los campos son obligatorios, el precio debe ser >= 0 y el stock >= 0." });
   }
 
   con.query(
     'INSERT INTO panes (nombre, precio, ingredientes, imagen_url, stock) VALUES (?, ?, ?, ?, ?)',
     [nombre, precioNum, ingredientes, imagen_url, stockNum],
     (err) => {
-      if (err) return res.status(500).send("Error al insertar el pan.");
-      res.send(`<h1>Pan agregado exitosamente!</h1><a href="/">Volver</a>`);
+      if (err) return res.json({ ok: false, error: "Error al insertar el pan." });
+      res.json({ ok: true, mensaje: "Pan agregado exitosamente." });
     }
   );
 });
+
 
 
 app.get('/obtenerPanes', (req, res) => {
@@ -273,10 +264,10 @@ app.get('/api/usuarios', (req, res) => {
 });
 
 app.get('/api/panes', (req, res) => {
-    con.query('SELECT * FROM panes', (err, resultado) => {
-        if (err) return res.status(500).json({ error: 'Error al obtener panes' });
-        res.json(resultado);
-    });
+  con.query('SELECT * FROM panes', (err, resultado) => {
+    if (err) return res.status(500).json({ error: 'Error al obtener panes' });
+    res.json(resultado);
+  });
 });
 
 app.post('/registrarUsuario', (req, res) => {

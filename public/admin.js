@@ -17,7 +17,7 @@ fetch('/estadoSesion')
       alert("Acceso restringido. Solo el administrador puede entrar aquí.");
       window.location.href = '/';
     } else {
-      // Activar botón de logout
+
       const logoutBtn = document.getElementById('logout-button');
       const message = document.getElementById('session-message');
 
@@ -30,7 +30,7 @@ fetch('/estadoSesion')
         .then(() => {
           message.textContent = "Sesión cerrada correctamente.";
           setTimeout(() => {
-            window.location.href = '/'; // redirigir al index del cliente
+            window.location.href = '/';
           }, 2000);
         })
         .catch(() => {
@@ -82,6 +82,33 @@ async function cargarPanes() {
   });
 }
 
-// Inicializar
+const formPan = document.querySelector('form[action="/agregarPan"]');
+if (formPan) {
+  formPan.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    const body = Object.fromEntries(fd.entries());
+
+    try {
+      const res = await fetch('/agregarPan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      const data = await res.json();
+
+      if (data.ok) {
+        alert(data.mensaje); // 👈 aquí sale la alerta
+        e.target.reset();
+        cargarPanes(); // refresca lista
+      } else {
+        alert(data.error || 'Error al agregar pan');
+      }
+    } catch {
+      alert("Error en la operación");
+    }
+  });
+}
+
 cargarUsuarios();
 cargarPanes();
