@@ -265,39 +265,6 @@ fetch('/estadoSesion')
     }
   });
 
-  async function cargarHistorial() {
-  const contenedor = document.getElementById('historial-container');
-  contenedor.innerHTML = '';
-
-  try {
-    const res = await fetch('/comprasUsuario');
-    const compras = await res.json();
-
-    if (!Array.isArray(compras) || compras.length === 0) {
-      contenedor.innerHTML = '<p class="text-center text-gray-400">No hay compras registradas.</p>';
-      return;
-    }
-
-    compras.forEach(compra => {
-      const tarjeta = document.createElement('div');
-      tarjeta.className = 'bg-gray-800 p-4 rounded shadow';
-
-      tarjeta.innerHTML = `
-        <h3 class="text-lg font-bold mb-2">${compra.nombre_pan}</h3>
-        <p><strong>Precio:</strong> $${compra.precio}</p>
-        <p><strong>Cantidad:</strong> ${compra.cantidad}</p>
-        <p><strong>Total:</strong> $${(compra.precio * compra.cantidad).toFixed(2)}</p>
-        <p><strong>Fecha:</strong> ${new Date(compra.fecha).toLocaleString()}</p>
-        <p class="text-sm text-gray-400">Venta #${compra.numero_venta}</p>
-      `;
-
-      contenedor.appendChild(tarjeta);
-    });
-  } catch {
-    contenedor.innerHTML = '<p class="text-center text-red-400">Error al cargar el historial.</p>';
-  }
-}
-
 async function cargarHistorial() {
   const contenedor = document.getElementById('historial-container');
   contenedor.innerHTML = '';
