@@ -42,21 +42,18 @@
       </div>
     </section>
 
-    <!-- CRUD de Usuarios -->
+
     <section class="crud-section border-t border-gray-700 mt-12 pt-10">
       <h2 class="text-4xl font-bold text-center mb-10">Administración de Usuarios</h2>
       <div class="crud-container mx-auto">
         <div class="crud-form">
             <h3>Agregar Usuario Cliente</h3>
                 <form method="POST" action="/registrarUsuario">
-                    <input type="text" name="nombre" placeholder="Nombre de usuario" required
-                        class="w-full p-2 mb-4 bg-gray-800 text-white rounded border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <input type="text" name="nombre" placeholder="Nombre de usuario" required>
 
-                    <input type="email" name="correo" placeholder="Correo electrónico" required
-                        class="w-full p-2 mb-4 bg-gray-800 text-white rounded border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <input type="email" name="correo" placeholder="Correo electrónico" required>
 
-                    <input type="password" name="contraseña" placeholder="Contraseña" required
-                        class="w-full p-2 mb-4 bg-gray-800 text-white rounded border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <input type="password" name="contraseña" placeholder="Contraseña" required>
 
                     <button type="submit"
                         class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition font-semibold">

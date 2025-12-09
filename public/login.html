@@ -8,12 +8,39 @@
 <body>
     <div class="auth-container">
         <h2>Iniciar Sesión</h2>
-        <form method="POST" action="/iniciarSesion">
+         <form id="login-form">
             <input type="text" name="nombre" placeholder="Usuario" required>
             <input type="password" name="contraseña" placeholder="Contraseña" required>
             <button type="submit">Entrar</button>
         </form>
         <p>¿No tienes cuenta? <a href="/crearCuenta.html">Crear Cuenta</a></p>
     </div>
+    <script>
+  document.getElementById('login-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const form = e.target;
+    const nombre = form.nombre.value;
+    const contraseña = form.contraseña.value;
+
+    try {
+      const res = await fetch('/iniciarSesion', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nombre, contraseña })
+      });
+
+      const data = await res.json();
+
+      if (data.ok) {
+        window.location.href = data.redirect;
+      } else {
+        alert(data.error || 'Credenciales incorrectas');
+      }
+    } catch (err) {
+      alert('Error al iniciar sesión');
+    }
+  });
+</script>
 </body>
 </html>
