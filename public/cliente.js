@@ -164,18 +164,21 @@ if (pagarBtn) {
   pagarBtn.addEventListener('click', async () => {
     if (!sesionActiva) return;
     try {
-      await fetchJson('/carrito/compra', { method: 'POST' });
+      const res = await fetchJson('/carrito/compra', { method: 'POST' });
 
-      alert('Compra registrada correctamente.');
-
-      await loadAndRenderCarrito();
-
-      await cargarCatalogo();
+      if (res.ok) {
+        alert(res.mensaje || 'Compra registrada correctamente.');
+        await loadAndRenderCarrito();
+        await cargarCatalogo();
+      } else {
+        alert(res.error || 'Error al procesar la compra');
+      }
     } catch {
       alert('Error al procesar la compra');
     }
   });
 }
+
 
 
 fetch('/estadoSesion')

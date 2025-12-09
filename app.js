@@ -355,62 +355,65 @@ app.delete('/carrito/eliminar/:id', (req, res) => {
 
 // --- Ruta de compra con actualización de stock ---
 app.post('/carrito/compra', (req, res) => {
-  con.query('SELECT id FROM usuarios WHERE sesion_iniciada = 1 LIMIT 1', (err, resultado) => {
+  con.query('SELECT id, fondos FROM usuarios WHERE sesion_iniciada = 1 LIMIT 1', (err, resultado) => {
     if (err || resultado.length === 0) {
       return res.status(403).json({ error: 'No hay sesión activa' });
     }
     const usuarioId = resultado[0].id;
+    let fondosActuales = resultado[0].fondos;
+
+    // Calcular total del carrito
+    let totalCompra = carrito.reduce((acc, item) => acc + (item.precio * item.cantidad), 0);
+
+    // Validar fondos
+    if (fondosActuales < totalCompra) {
+      return res.status(400).json({ error: `Fondos insuficientes. Necesitas $${totalCompra}, tienes $${fondosActuales}` });
+    }
 
     // Validar stock antes de procesar
     let erroresStock = [];
-
+    let pendientes = carrito.length;
     carrito.forEach(item => {
-      con.query(
-        'SELECT stock FROM panes WHERE nombre = ?',
-        [item.nombre],
-        (err, rows) => {
-          if (err || rows.length === 0) {
-            erroresStock.push(`El producto ${item.nombre} no existe.`);
-          } else {
-            const stockActual = rows[0].stock;
-            if (stockActual < item.cantidad) {
-              erroresStock.push(`Stock insuficiente para ${item.nombre}. Disponible: ${stockActual}`);
-            }
+      con.query('SELECT stock FROM panes WHERE nombre = ?', [item.nombre], (err, rows) => {
+        pendientes--;
+        if (err || rows.length === 0) {
+          erroresStock.push(`El producto ${item.nombre} no existe.`);
+        } else {
+          const stockActual = rows[0].stock;
+          if (stockActual < item.cantidad) {
+            erroresStock.push(`Stock insuficiente para ${item.nombre}. Disponible: ${stockActual}`);
           }
         }
-      );
-    });
 
-    // Esperar un poco para validar todos los productos
-    setTimeout(() => {
-      if (erroresStock.length > 0) {
-        return res.status(400).json({ error: erroresStock.join(', ') });
-      }
-
-      // Procesar compra y actualizar stock
-      carrito.forEach(item => {
-        // Registrar compra
-        con.query(
-          'INSERT INTO compras (usuario_id, nombre_pan, precio, cantidad, numero_venta) VALUES (?, ?, ?, ?, ?)',
-          [usuarioId, item.nombre, item.precio, item.cantidad, Date.now()]
-        );
-
-        // Actualizar stock
-        con.query(
-          'UPDATE panes SET stock = stock - ? WHERE nombre = ?',
-          [item.cantidad, item.nombre],
-          (err) => {
-            if (err) console.error("Error al actualizar stock:", err);
+        if (pendientes === 0) {
+          if (erroresStock.length > 0) {
+            return res.status(400).json({ error: erroresStock.join(', ') });
           }
-        );
-      });
 
-      // Vaciar carrito
-      carrito.length = 0;
-      res.json({ ok: true });
-    }, 300); // pequeño delay para esperar validaciones
+          // Descontar fondos
+          con.query('UPDATE usuarios SET fondos = fondos - ? WHERE id = ?', [totalCompra, usuarioId]);
+
+          // Procesar compra y actualizar stock
+          carrito.forEach(item => {
+            con.query(
+              'INSERT INTO compras (usuario_id, nombre_pan, precio, cantidad, numero_venta) VALUES (?, ?, ?, ?, ?)',
+              [usuarioId, item.nombre, item.precio, item.cantidad, Date.now()]
+            );
+
+            con.query(
+              'UPDATE panes SET stock = stock - ? WHERE nombre = ?',
+              [item.cantidad, item.nombre]
+            );
+          });
+
+          carrito.length = 0; // Vaciar carrito
+          return res.json({ ok: true, mensaje: `Compra realizada. Se descontaron $${totalCompra} de tus fondos.` });
+        }
+      });
+    });
   });
 });
+
 
 
 app.put('/carrito/actualizar/:id', (req, res) => {
