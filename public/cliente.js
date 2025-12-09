@@ -307,8 +307,8 @@ function cerrarSesion() {
       setTimeout(() => { message.textContent = ""; }, 3000);
     }
 
-    cargarCatalogo?.();
-    loadAndRenderCarrito?.();
+    cargarCatalogo();
+    loadAndRenderCarrito();
   })
   .catch(() => {
     if (message) {
