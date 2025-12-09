@@ -6,7 +6,6 @@ const pagarBtn = document.getElementById('pagarBtn');
 const grid = document.getElementById('product-grid');
 let sesionActiva = false;
 
-// Utilidad fetch con manejo de errores
 async function fetchJson(url, opts) {
   try {
     const res = await fetch(url, opts);
@@ -18,9 +17,8 @@ async function fetchJson(url, opts) {
   }
 }
 
-// Catálogo
 async function cargarCatalogo() {
-  if (!grid) return; // solo si existe el contenedor de productos
+  if (!grid) return;
   const panes = await fetchJson('/api/panes');
   grid.innerHTML = '';
 
@@ -46,9 +44,8 @@ async function cargarCatalogo() {
   if (!sesionActiva) deshabilitarAcciones();
 }
 
-// Carrito
 async function loadAndRenderCarrito() {
-  if (!tablaBody) return; // solo si existe la tabla del carrito
+  if (!tablaBody) return; 
   const cart = await fetchJson('/carrito');
   tablaBody.innerHTML = '';
   let total = 0;
@@ -78,7 +75,6 @@ async function loadAndRenderCarrito() {
   if (!sesionActiva) deshabilitarAcciones();
 }
 
-// Deshabilitar acciones (solo aplica si los elementos existen)
 function deshabilitarAcciones() {
   document.querySelectorAll('.buy-button').forEach(btn => {
     btn.disabled = true;
@@ -99,7 +95,6 @@ function deshabilitarAcciones() {
   });
 
   if (pagarBtn) {
-    // Tu lógica: pagar habilitado para ver mensaje aunque no haya sesión
     pagarBtn.disabled = false;
     pagarBtn.classList.remove('opacity-50', 'cursor-not-allowed');
     pagarBtn.title = '';
@@ -115,7 +110,6 @@ function deshabilitarAcciones() {
   }
 }
 
-// Evento global para agregar al carrito (no depende de tener grid/tabla)
 document.addEventListener('click', async (e) => {
   const btn = e.target.closest('.buy-button');
   if (!btn || !sesionActiva) return;
@@ -136,7 +130,6 @@ document.addEventListener('click', async (e) => {
   }
 });
 
-// Eventos del carrito (solo si existe la tabla)
 if (tablaBody) {
   tablaBody.addEventListener('click', async (e) => {
     const btn = e.target.closest('button[data-id]');
@@ -172,7 +165,6 @@ if (tablaBody) {
   });
 }
 
-// Botón pagar (solo si existe)
 if (pagarBtn) {
   pagarBtn.addEventListener('click', async () => {
     if (!sesionActiva) {
@@ -197,7 +189,6 @@ if (pagarBtn) {
   });
 }
 
-// Estado de sesión (siempre se puede consultar)
 fetch('/estadoSesion')
   .then(res => res.json())
   .then(data => {
@@ -296,7 +287,6 @@ fetch('/estadoSesion')
     }
   });
 
-// Historial
 async function cargarHistorial() {
   const contenedor = document.getElementById('historial-container');
   if (!contenedor) return;
@@ -331,7 +321,6 @@ async function cargarHistorial() {
   }
 }
 
-// Inicialización condicional según página
 if (window.location.pathname.includes('historial.html')) {
   cargarHistorial();
 }

@@ -98,9 +98,9 @@ if (formPan) {
       const data = await res.json();
 
       if (data.ok) {
-        alert(data.mensaje); // 👈 aquí sale la alerta
+        alert(data.mensaje);
         e.target.reset();
-        cargarPanes(); // refresca lista
+        cargarPanes();
       } else {
         alert(data.error || 'Error al agregar pan');
       }

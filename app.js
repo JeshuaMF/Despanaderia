@@ -175,17 +175,20 @@ app.get('/obtenerUsuarios', (req, res) => {
     let usuariosHTML = ``;
     resultado.forEach(u => {
       usuariosHTML += `<tr>
-        <td>${u.id}</td>
-        <td>${u.nombre}</td>
-        <td>${u.correo}</td>
-        <td>${u.rol}</td>
-        <td>
-          <form method="POST" action="/borrarUsuario" onsubmit="return confirm('¿Eliminar ${u.nombre}?');">
-            <input type="hidden" name="id" value="${u.id}">
-            <button class="delete-button">Eliminar</button>
-          </form>
-        </td>
-      </tr>`;
+    <td>${u.id}</td>
+    <td>${u.nombre}</td>
+    <td>${u.correo}</td>
+    <td>${u.rol}</td>
+    <td>
+        <form method="POST" action="/borrarUsuario" onsubmit="return confirm('¿Eliminar ${u.nombre}?');" style="display:inline;">
+        <input type="hidden" name="id" value="${u.id}">
+        <button class="delete-button">Eliminar</button>
+        </form>
+        <a href="/ticketsUsuario/${u.id}">
+        <button class="ticket-button">Tickets</button>
+        </a>
+    </td>
+    </tr>`;
     });
 
     res.send(`
@@ -466,7 +469,52 @@ app.get('/comprasUsuario', (req, res) => {
   });
 });
 
+app.get('/ticketsUsuario/:id', (req, res) => {
+  const usuarioId = req.params.id;
 
+  con.query('SELECT * FROM compras WHERE usuario_id = ?', [usuarioId], (err, compras) => {
+    if (err) {
+      console.error('Error al obtener compras del usuario:', err);
+      return res.status(500).send("Error al cargar historial.");
+    }
+
+    let html = `
+      <!DOCTYPE html>
+      <html lang="es">
+      <head>
+        <title>Tickets del Usuario</title>
+        <style>
+          body { font-family: 'Inter', sans-serif; background-color: #1a1a1a; color: white; padding: 20px; }
+          .ticket-card { background-color: #2c2c2c; padding: 20px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 0 10px #000; }
+          .ticket-card h3 { margin-bottom: 10px; }
+          a { color: #61DAFB; text-decoration: none; display: block; margin-top: 20px; }
+        </style>
+      </head>
+      <body>
+        <h2>Historial de Compras del Usuario #${usuarioId}</h2>
+    `;
+
+    if (!compras.length) {
+      html += `<p>No hay compras registradas.</p>`;
+    } else {
+      compras.forEach(compra => {
+        html += `
+          <div class="ticket-card">
+            <h3>${compra.nombre_pan}</h3>
+            <p>Precio unitario: $${Number(compra.precio).toFixed(2)}</p>
+            <p>Cantidad: ${compra.cantidad}</p>
+            <p>Total: $${(compra.precio * compra.cantidad).toFixed(2)}</p>
+            <p>Fecha: ${new Date(compra.fecha).toLocaleString()}</p>
+            <p>Venta #${compra.numero_venta}</p>
+          </div>
+        `;
+      });
+    }
+
+    html += `<a href="/obtenerUsuarios">← Volver a la lista de usuarios</a></body></html>`;
+    res.send(html);
+  });
+});
 
 app.listen(process.env.PORT || 10000, () => {
     console.log(`Servidor escuchando en el puerto ${process.env.PORT || 10000}`);
