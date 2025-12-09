@@ -9,22 +9,24 @@
 </head>
 <body class="bg-gray-900 text-white">
   <header class="navbar flex justify-between items-center mx-auto mt-4 max-w-7xl">
-    <div class="logo text-2xl font-bold">Panel Admin</div>
-    <div class="nav-icons flex items-center space-x-4">
-      <span id="session-icon" class="text-xl cursor-pointer hover:text-gray-400 transition">
-        <button id="logout-button" class="text-xl bg-transparent border-none cursor-pointer" title="Cerrar sesión">🔓</button>
-      </span>
-    </div>
-  </header>
-  <div id="session-message" class="text-sm text-green-400 mt-2 text-center"></div>
+  <div class="logo text-2xl font-bold">Panel Admin</div>
+  <div class="nav-icons flex items-center space-x-4">
+    <span id="session-icon" class="text-xl cursor-pointer hover:text-gray-400 transition">
+      <button id="logout-button" class="text-xl bg-transparent border-none cursor-pointer" title="Cerrar sesión">🔓</button>
+    </span>
+  </div>
+</header>
+<div id="session-message" class="text-sm text-green-400 mt-2 text-center"></div>
+
 
   <main class="max-w-7xl mx-auto p-4">
+    <!-- CRUD de Panes -->
     <section class="crud-section border-t border-gray-700 mt-12 pt-10">
       <h2 class="text-4xl font-bold text-center mb-10">Administración de Panes</h2>
       <div class="crud-container mx-auto">
         <div class="crud-form">
           <h3>Agregar Pan Nuevo</h3>
-          <form id="form-pan">
+          <form method="POST" action="/agregarPan">
             <input type="text" name="nombre" placeholder="Nombre del pan" required>
             <input type="number" name="precio" placeholder="Precio" step="0.01" min="0" required>
             <textarea name="ingredientes" placeholder="Ingredientes" required></textarea>
@@ -35,29 +37,33 @@
         </div>
         <div class="crud-actions-card">
           <h3>Gestión de Panes</h3>
-          <div id="panes-list" class="mt-6"></div>
+          <a href="/obtenerPanes" class="list-link" id="crudListaBtn">Ver/Editar/Borrar Panes</a>
         </div>
       </div>
     </section>
+
 
     <section class="crud-section border-t border-gray-700 mt-12 pt-10">
       <h2 class="text-4xl font-bold text-center mb-10">Administración de Usuarios</h2>
       <div class="crud-container mx-auto">
         <div class="crud-form">
-          <h3>Agregar Usuario Cliente</h3>
-          <form method="POST" action="/registrarUsuario">
-            <input type="text" name="nombre" placeholder="Nombre de usuario" required>
-            <input type="email" name="correo" placeholder="Correo electrónico" required>
-            <input type="password" name="contraseña" placeholder="Contraseña" required>
-            <button type="submit"
-              class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition font-semibold">
-              Guardar Usuario
-            </button>
-          </form>
+            <h3>Agregar Usuario Cliente</h3>
+                <form method="POST" action="/registrarUsuario">
+                    <input type="text" name="nombre" placeholder="Nombre de usuario" required>
+
+                    <input type="email" name="correo" placeholder="Correo electrónico" required>
+
+                    <input type="password" name="contraseña" placeholder="Contraseña" required>
+
+                    <button type="submit"
+                        class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition font-semibold">
+                        Guardar Usuario
+                    </button>
+                </form>
         </div>
         <div class="crud-actions-card">
           <h3>Gestión de Usuarios</h3>
-          <div id="usuarios-list" class="mt-6"></div>
+          <a href="/obtenerUsuarios" class="list-link" id="crudUsuariosBtn">Ver/Editar/Borrar Usuarios</a>
         </div>
       </div>
     </section>
@@ -66,4 +72,3 @@
   <script src="admin.js"></script>
 </body>
 </html>
-

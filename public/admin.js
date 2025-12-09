@@ -10,7 +10,6 @@ async function fetchJson(url, opts) {
   }
 }
 
-// Validar sesión admin
 fetch('/estadoSesion')
   .then(res => res.json())
   .then(data => {
@@ -18,6 +17,7 @@ fetch('/estadoSesion')
       alert("Acceso restringido. Solo el administrador puede entrar aquí.");
       window.location.href = '/';
     } else {
+      // Activar botón de logout
       const logoutBtn = document.getElementById('logout-button');
       const message = document.getElementById('session-message');
 
@@ -29,7 +29,9 @@ fetch('/estadoSesion')
         })
         .then(() => {
           message.textContent = "Sesión cerrada correctamente.";
-          setTimeout(() => { window.location.href = '/'; }, 2000);
+          setTimeout(() => {
+            window.location.href = '/'; // redirigir al index del cliente
+          }, 2000);
         })
         .catch(() => {
           message.textContent = "Error al cerrar sesión.";
@@ -39,33 +41,7 @@ fetch('/estadoSesion')
     }
   });
 
-// Interceptar formulario de agregar pan
-document.getElementById('form-pan').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const fd = new FormData(e.target);
-  const body = Object.fromEntries(fd.entries());
 
-  try {
-    const res = await fetch('/agregarPan', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
-    });
-    const data = await res.json();
-
-    if (data.ok) {
-      alert(data.mensaje);
-      e.target.reset();
-      cargarPanes(); // refrescar lista
-    } else {
-      alert(data.error);
-    }
-  } catch {
-    alert("Error en la operación");
-  }
-});
-
-// Cargar usuarios
 async function cargarUsuarios() {
   const usuarios = await fetchJson('/api/usuarios');
   const contenedor = document.getElementById('usuarios-list');
@@ -86,7 +62,6 @@ async function cargarUsuarios() {
   });
 }
 
-// Cargar panes
 async function cargarPanes() {
   const panes = await fetchJson('/api/panes');
   const contenedor = document.getElementById('panes-list');

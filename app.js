@@ -35,22 +35,25 @@ app.post('/agregarPan', (req, res) => {
     !nombre ||
     !ingredientes ||
     !imagen_url ||
-    isNaN(precioNum) || precioNum < 0 ||
-    isNaN(stockNum) || stockNum < 0
+    precioNum === undefined ||
+    isNaN(precioNum) ||
+    precioNum < 0 ||
+    stockNum === undefined ||
+    isNaN(stockNum) ||
+    stockNum < 0
   ) {
-    return res.json({ ok: false, error: "Todos los campos son obligatorios, el precio debe ser >= 0 y el stock >= 0." });
+    return res.status(400).send("Todos los campos son obligatorios, el precio debe ser >= 0 y el stock >= 0.");
   }
 
   con.query(
     'INSERT INTO panes (nombre, precio, ingredientes, imagen_url, stock) VALUES (?, ?, ?, ?, ?)',
     [nombre, precioNum, ingredientes, imagen_url, stockNum],
     (err) => {
-      if (err) return res.json({ ok: false, error: "Error al insertar el pan." });
-      return res.json({ ok: true, mensaje: "Pan agregado exitosamente!" });
+      if (err) return res.status(500).send("Error al insertar el pan.");
+      res.send(`<h1>Pan agregado exitosamente!</h1><a href="/">Volver</a>`);
     }
   );
 });
-
 
 
 app.get('/obtenerPanes', (req, res) => {
@@ -369,45 +372,41 @@ app.post('/carrito/compra', (req, res) => {
       return res.status(400).json({ error: `Fondos insuficientes. Necesitas $${totalCompra}, tienes $${fondosActuales}` });
     }
 
-    const numeroVenta = Date.now();
     let erroresStock = [];
+    let pendientes = carrito.length;
+    const numeroVenta = Date.now();
 
-    Promise.all(carrito.map(item => {
-      return new Promise((resolve, reject) => {
-        con.query('SELECT stock FROM panes WHERE nombre = ?', [item.nombre], (err, rows) => {
-          if (err || rows.length === 0 || rows[0].stock < item.cantidad) {
-            erroresStock.push(`Stock insuficiente para ${item.nombre}`);
-          }
-          resolve();
-        });
-      });
-    })).then(() => {
-      if (erroresStock.length > 0) {
-        return res.status(400).json({ error: erroresStock.join(', ') });
-      }
+    carrito.forEach(item => {
+      con.query('SELECT stock FROM panes WHERE nombre = ?', [item.nombre], (err, rows) => {
+        pendientes--;
+        if (err || rows.length === 0 || rows[0].stock < item.cantidad) {
+          erroresStock.push(`Stock insuficiente para ${item.nombre}`);
+        }
 
-      con.query('UPDATE usuarios SET fondos = fondos - ? WHERE id = ?', [totalCompra, usuarioId], (err2) => {
-        if (err2) return res.status(500).json({ error: 'Error al actualizar fondos' });
-        carrito.forEach(item => {
-          con.query('INSERT INTO compras (usuario_id, nombre_pan, precio, cantidad, numero_venta) VALUES (?, ?, ?, ?, ?)',
-            [usuarioId, item.nombre, item.precio, item.cantidad, numeroVenta]);
+        if (pendientes === 0) {
+          if (erroresStock.length > 0) return res.status(400).json({ error: erroresStock.join(', ') });
 
-          con.query('UPDATE panes SET stock = stock - ? WHERE nombre = ?', [item.cantidad, item.nombre]);
-        });
+          con.query('UPDATE usuarios SET fondos = fondos - ? WHERE id = ?', [totalCompra, usuarioId]);
 
-        con.query('INSERT INTO tickets (numero_venta, usuario_id, total) VALUES (?, ?, ?)',
-          [numeroVenta, usuarioId, totalCompra]);
-        carrito.length = 0;
+          carrito.forEach(item => {
+            con.query('INSERT INTO compras (usuario_id, nombre_pan, precio, cantidad, numero_venta) VALUES (?, ?, ?, ?, ?)',
+              [usuarioId, item.nombre, item.precio, item.cantidad, numeroVenta]);
 
-        res.json({
-          ok: true,
-          mensaje: `Compra realizada. Se descontaron $${totalCompra} de tus fondos.`,
-          nuevosFondos: fondosActuales - totalCompra
-        });
+            con.query('UPDATE panes SET stock = stock - ? WHERE nombre = ?', [item.cantidad, item.nombre]);
+          });
+
+          con.query('INSERT INTO tickets (numero_venta, usuario_id, total) VALUES (?, ?, ?)',
+            [numeroVenta, usuarioId, totalCompra]);
+
+          carrito.length = 0;
+          res.json({ ok: true, mensaje: `Compra realizada. Se descontaron $${totalCompra} de tus fondos.`, nuevosFondos: fondosActuales - totalCompra });
+        }
       });
     });
   });
 });
+
+
 
 
 app.put('/carrito/actualizar/:id', (req, res) => {

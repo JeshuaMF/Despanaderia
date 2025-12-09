@@ -191,29 +191,26 @@ fetch('/estadoSesion')
     const fundsForm = document.getElementById('funds-form');
     const formAddFunds = document.getElementById('form-add-funds');
     const userFunds = document.getElementById('user-funds');
-    const pagarBtn = document.getElementById('pagar-btn');
 
     if (sesionActiva) {
       icon.innerHTML = `<button id="logout-button" class="text-xl bg-transparent border-none cursor-pointer" title="Cerrar sesión">🔓</button>`;
       document.getElementById('logout-button').addEventListener('click', cerrarSesion);
 
+      // Mostrar fondos actuales
       userFunds.textContent = `Fondos: $${data.fondos}`;
 
+      // Activar botones
       addFundsBtn.disabled = false;
       addFundsBtn.classList.remove('opacity-50', 'cursor-not-allowed');
       ticketsLink.classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
-      ticketsLink.href = "/historial.html";
+      ticketsLink.href = "/tickets.html";
 
-      if (pagarBtn) {
-        pagarBtn.disabled = false;
-        pagarBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-        pagarBtn.title = '';
-      }
-
+      // Mostrar formulario de fondos
       addFundsBtn.addEventListener('click', () => {
         fundsForm.classList.toggle('hidden');
       });
 
+      // Enviar fondos
       formAddFunds.addEventListener('submit', async (e) => {
         e.preventDefault();
         const cantidad = e.target.cantidad.value;
@@ -229,6 +226,7 @@ fetch('/estadoSesion')
           if (result.ok) {
             alert('Fondos agregados correctamente.');
             fundsForm.classList.add('hidden');
+            // 🔄 Actualizar fondos en pantalla
             userFunds.textContent = `Fondos: $${result.nuevosFondos}`;
           } else {
             alert(result.error || 'Error al agregar fondos.');
@@ -240,20 +238,31 @@ fetch('/estadoSesion')
     } else {
       icon.innerHTML = `<a href="/login.html" title="Iniciar sesión">👤</a>`;
       userFunds.textContent = "";
-
       addFundsBtn.disabled = true;
       addFundsBtn.classList.add('opacity-50', 'cursor-not-allowed');
       ticketsLink.classList.add('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
       ticketsLink.href = "#";
       fundsForm.classList.add('hidden');
-
-      if (pagarBtn) {
-        pagarBtn.disabled = true;
-        pagarBtn.classList.add('opacity-50', 'cursor-not-allowed');
-        pagarBtn.title = 'Inicia sesión para pagar';
-      }
-
       deshabilitarAcciones();
+    }
+
+    function cerrarSesion() {
+      fetch('/cerrarSesion', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ correo: data.correo })
+      })
+      .then(() => {
+        sesionActiva = false;
+        icon.innerHTML = `<a href="/login.html" title="Iniciar sesión">👤</a>`;
+        userFunds.textContent = "";
+        addFundsBtn.disabled = true;
+        addFundsBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        ticketsLink.classList.add('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+        ticketsLink.href = "#";
+        fundsForm.classList.add('hidden');
+        deshabilitarAcciones();
+      });
     }
   });
 
@@ -294,27 +303,8 @@ if (window.location.pathname.includes('historial.html')) {
   cargarHistorial();
 }
 
-document.getElementById('pagar-btn')?.addEventListener('click', async () => {
-  if (!sesionActiva) {
-    alert('Inicia sesión para pagar');
-    return;
-  }
 
-  try {
-    const res = await fetch('/carrito/compra', { method: 'POST' });
-    const data = await res.json();
 
-    if (data.ok) {
-      alert(data.mensaje || 'Compra realizada correctamente.');
-      document.getElementById('user-funds')?.textContent = `Fondos: $${data.nuevosFondos}`;
-      await loadAndRenderCarrito?.(); // refresca carrito
-    } else {
-      alert(data.error || 'Error al procesar la compra');
-    }
-  } catch {
-    alert('Error al procesar la compra');
-  }
-});
 
 cargarCatalogo();
 loadAndRenderCarrito();
