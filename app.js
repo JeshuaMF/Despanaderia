@@ -4,7 +4,7 @@ const bodyParser = require("body-parser");
 const app = express();
 
 require('dotenv').config();
-//Conexi
+//cambio para cargar
 const con = mysql.createConnection({
   host: process.env.DB_HOST,
   port: process.env.DB_PORT,
